@@ -1,0 +1,1 @@
+<livewire:templates.template-manager />

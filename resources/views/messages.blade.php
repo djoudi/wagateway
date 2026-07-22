@@ -1,0 +1,1 @@
+<livewire:messages.message-log />

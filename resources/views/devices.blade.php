@@ -1,0 +1,1 @@
+<livewire:devices.device-manager />

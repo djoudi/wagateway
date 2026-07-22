@@ -1,0 +1,1 @@
+<livewire:schedule.schedule-manager />

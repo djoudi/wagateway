@@ -1,0 +1,1 @@
+<livewire:bulk.bulk-sender />

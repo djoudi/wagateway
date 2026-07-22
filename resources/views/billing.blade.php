@@ -1,0 +1,1 @@
+<livewire:billing.billing-page />

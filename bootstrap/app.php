@@ -22,6 +22,21 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->statefulApi();
 
+        // Trust proxy headers (X-Forwarded-Proto, -Host, -Port) from the
+        // internal Docker network. Required for correct HTTPS URL
+        // generation and secure cookies when running behind nginx alone
+        // (standalone deploy) or nginx + Coolify's Traefik (Coolify deploy)
+        // — without this, Laravel never sees the request as HTTPS even
+        // though the public-facing connection is, and secure cookies won't
+        // be sent by the browser at all.
+        $middleware->trustProxies(
+            at: ['172.16.0.0/12', '10.0.0.0/8', '192.168.0.0/16'],
+            headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR
+                   | \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST
+                   | \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT
+                   | \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO,
+        );
+
         // These endpoints receive POSTs from non-browser clients (the Node.js
         // WA service, and Chargily's payment gateway) authenticated by their
         // own signed secrets — not by a Laravel session — so they cannot

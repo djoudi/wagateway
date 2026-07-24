@@ -18,10 +18,27 @@ RUN apk add --no-cache \
     libpng-dev
 
 # PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install \
-    pdo pdo_pgsql gd bcmath mbstring xml tokenizer ctype \
-    opcache pcntl sockets
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
+RUN docker-php-ext-install pdo
+
+RUN docker-php-ext-install pdo_pgsql
+
+RUN docker-php-ext-install gd
+
+RUN docker-php-ext-install bcmath
+
+RUN docker-php-ext-install mbstring
+
+RUN docker-php-ext-install xml
+
+RUN docker-php-ext-install zip
+
+RUN docker-php-ext-install opcache
+
+RUN docker-php-ext-install pcntl
+
+RUN docker-php-ext-install sockets
 
 # Redis extension
 RUN pecl install redis && docker-php-ext-enable redis

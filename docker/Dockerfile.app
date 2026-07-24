@@ -2,9 +2,20 @@ FROM php:8.3-fpm-alpine AS base
 
 # System deps
 RUN apk add --no-cache \
-    postgresql-dev libpng-dev libjpeg-turbo-dev freetype-dev \
-    zip unzip git curl oniguruma-dev libxml2-dev \
-    linux-headers $PHPIZE_DEPS
+    git \
+    curl \
+    unzip \
+    zip \
+    linux-headers \
+    $PHPIZE_DEPS \
+    postgresql-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    zlib-dev \
+    libzip-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev
 
 # PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \

@@ -8,10 +8,22 @@ FROM php:8.3-fpm-alpine AS base
 #   its absence is a well-known cause of docker-php-ext-install failing
 #   silently with just "exit code: 2" and no clearer message.
 RUN apk add --no-cache \
-    postgresql-dev libpng-dev libjpeg-turbo-dev freetype-dev \
-    icu-dev icu-libs libzip-dev \
-    zip unzip git curl oniguruma-dev libxml2-dev \
-    linux-headers $PHPIZE_DEPS
+    postgresql-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    icu-dev \
+    icu-libs \
+    oniguruma-dev \
+    libxml2-dev \
+    linux-headers \
+    zip \
+    unzip \
+    git \
+    curl \
+    bash \
+    $PHPIZE_DEPS
 
 # PHP extensions — installed in isolated groups rather than one combined
 # command. If any single extension ever fails to compile again, the build
@@ -19,7 +31,15 @@ RUN apk add --no-cache \
 # bundled 12-extension command where the actual culprit is ambiguous.
 
 # Core / database — proven working in prior builds
-RUN docker-php-ext-install pdo pdo_pgsql bcmath tokenizer ctype opcache pcntl sockets
+RUN docker-php-ext-install bcmath
+
+RUN docker-php-ext-install pdo_pgsql
+
+RUN docker-php-ext-install opcache
+
+RUN docker-php-ext-install pcntl
+
+RUN docker-php-ext-install sockets
 
 # Image handling
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -77,7 +97,7 @@ RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
 COPY . .
 RUN composer dump-autoload --optimize --no-dev \
  && chown -R wagateway:wagateway /var/www/html \
- && chmod -R 755 storage bootstrap/cache
+ && chmod -R 775 storage bootstrap/cache
 
 USER wagateway
 EXPOSE 9000

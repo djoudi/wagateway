@@ -1,22 +1,41 @@
 FROM php:8.3-fpm-alpine AS base
 
-# System deps — icu-dev is required to compile ext-intl (Filament hard-requires
-# this); libxml2-dev covers dom/simplexml (dompdf hard-requires ext-dom).
+# System deps
+# - icu-dev:   required to compile ext-intl (Filament hard-requires this)
+# - libxml2-dev: covers dom/simplexml (dompdf hard-requires ext-dom)
+# - libzip-dev: required to compile ext-zip — NOT the same as the zip/unzip
+#   CLI utilities below; this is the C library ext-zip links against, and
+#   its absence is a well-known cause of docker-php-ext-install failing
+#   silently with just "exit code: 2" and no clearer message.
 RUN apk add --no-cache \
     postgresql-dev libpng-dev libjpeg-turbo-dev freetype-dev \
-    icu-dev icu-libs \
+    icu-dev icu-libs libzip-dev \
     zip unzip git curl oniguruma-dev libxml2-dev \
     linux-headers $PHPIZE_DEPS
 
-# PHP extensions
-# - intl:      hard-required by filament/support (Filament v3)
-# - dom, simplexml: hard-required by dompdf/dompdf (barryvdh/laravel-dompdf)
-# - zip:       Laravel file export/import features
-# - exif:      image metadata handling (dompdf, media processing)
+# PHP extensions — installed in isolated groups rather than one combined
+# command. If any single extension ever fails to compile again, the build
+# log will point at the exact one-line RUN step that failed instead of a
+# bundled 12-extension command where the actual culprit is ambiguous.
+
+# Core / database — proven working in prior builds
+RUN docker-php-ext-install pdo pdo_pgsql bcmath tokenizer ctype opcache pcntl sockets
+
+# Image handling
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install \
-    pdo pdo_pgsql gd bcmath mbstring xml dom simplexml tokenizer ctype \
-    opcache pcntl sockets intl zip exif
+ && docker-php-ext-install gd exif
+
+# XML family (dompdf: ext-dom; general: ext-xml, ext-simplexml)
+RUN docker-php-ext-install xml dom simplexml
+
+# Multibyte strings (Laravel core requirement)
+RUN docker-php-ext-install mbstring
+
+# Internationalization (Filament hard-requires this)
+RUN docker-php-ext-install intl
+
+# Archive handling (Laravel file export/import features)
+RUN docker-php-ext-install zip
 
 # Redis extension
 RUN pecl install redis && docker-php-ext-enable redis

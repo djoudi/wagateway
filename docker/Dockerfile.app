@@ -8,22 +8,22 @@ FROM php:8.3-fpm-alpine AS base
 #   its absence is a well-known cause of docker-php-ext-install failing
 #   silently with just "exit code: 2" and no clearer message.
 RUN apk add --no-cache \
-    postgresql-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    libzip-dev \
-    icu-dev \
-    icu-libs \
-    oniguruma-dev \
-    libxml2-dev \
-    linux-headers \
-    zip \
-    unzip \
+    bash \
     git \
     curl \
-    bash \
-    $PHPIZE_DEPS
+    unzip \
+    zip \
+    linux-headers \
+    $PHPIZE_DEPS \
+    postgresql-dev \
+    icu-dev \
+    icu-libs \
+    libzip-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev
 
 # PHP extensions — installed in isolated groups rather than one combined
 # command. If any single extension ever fails to compile again, the build
@@ -31,19 +31,26 @@ RUN apk add --no-cache \
 # bundled 12-extension command where the actual culprit is ambiguous.
 
 # Core / database — proven working in prior builds
-RUN docker-php-ext-install bcmath
+# Configure GD
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg
 
-RUN docker-php-ext-install pdo_pgsql
+# Install PHP extensions
+RUN docker-php-ext-install \
+    bcmath \
+    exif \
+    intl \
+    zip \
+    gd \
+    pdo_pgsql \
+    opcache \
+    pcntl \
+    sockets
 
-RUN docker-php-ext-install opcache
-
-RUN docker-php-ext-install pcntl
-
-RUN docker-php-ext-install sockets
-
-# Image handling
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install gd exif
+# Install Redis
+RUN pecl install redis \
+ && docker-php-ext-enable redis
 
 # XML family (dompdf: ext-dom; general: ext-xml, ext-simplexml)
 RUN docker-php-ext-install xml dom simplexml

@@ -36,9 +36,24 @@ RUN apk add --no-cache \
 # been individually confirmed to build successfully.
 # ─────────────────────────────────────────────────────────────────────────
 
-# Core / database — pdo must be listed alongside pdo_pgsql explicitly;
-# tokenizer + ctype are hard requirements of Laravel itself.
-RUN docker-php-ext-install pdo pdo_pgsql bcmath tokenizer ctype opcache pcntl sockets
+# Core / database
+# NOTE: tokenizer and ctype are deliberately NOT in this list. They are
+# bundled/core PHP extensions — compiled directly into the PHP binary and
+# enabled by default on every standard build, official Docker images
+# included. They are not loadable modules and were never meant to be
+# built via docker-php-ext-install: doing so fails because ext/tokenizer's
+# source depends on Zend's own parser grammar file
+# (Zend/zend_language_parser.y), which is consumed during PHP's own core
+# build and isn't meant to be regenerated as a standalone module — this
+# is exactly the "No rule to make target zend_language_parser.y" error.
+RUN docker-php-ext-install pdo pdo_pgsql bcmath opcache pcntl sockets
+
+# Defensive check: confirm the bundled extensions above are actually
+# present on this base image. If a future PHP/Alpine release ever ships
+# without them, this fails the build immediately with a clear message
+# instead of surfacing as a confusing composer/runtime error much later.
+RUN php -m | grep -qi '^tokenizer$' && php -m | grep -qi '^ctype$' \
+ || (echo "ERROR: tokenizer or ctype missing from this PHP base image — they were expected to be bundled by default." && exit 1)
 
 # Image handling
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \

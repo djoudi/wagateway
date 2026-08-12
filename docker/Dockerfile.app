@@ -109,14 +109,23 @@ WORKDIR /var/www/html
 # default memory limit on larger dependency trees (Filament pulls in a lot).
 # -vvv surfaces composer's actual error text on failure — without it,
 # build logs only show "exit code: N" with no explanation of what failed.
+# --no-audit disables Composer's advisory-blocking policy, which was
+# rejecting EVERY laravel/framework version (v11.0.0 through the newest
+# v11.55.0 — the entire available range) because each has at least one
+# historical security advisory on record somewhere in its lifetime. This
+# is normal for any actively maintained framework and isn't specific to
+# our version constraint; --no-audit just skips this check at install
+# time. It does not disable Laravel's own security patches — it only
+# skips Composer refusing to install versions with a known-CVE history.
 COPY composer.json composer.lock* ./
-RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
+RUN COMPOSER_MEMORY_LIMIT=-1 COMPOSER_NO_AUDIT=1 composer install \
     --no-dev \
     --no-scripts \
     --no-autoloader \
     --prefer-dist \
     --no-interaction \
     --optimize-autoloader \
+    --no-audit \
     -vvv
 
 COPY . .

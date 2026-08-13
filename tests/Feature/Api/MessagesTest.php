@@ -8,8 +8,6 @@ use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Support\Str;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
-
 function makeTestSetup(int $dailyLimit = 100): array
 {
     $plan = Plan::create([

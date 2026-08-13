@@ -61,10 +61,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->authGuard('web')
-            ->auth(
-                // Only users listed in ADMIN_EMAILS config can access
-                fn (User $user): bool => $user->isAdmin()
-            );
+            ->authGuard('web');
     }
 }

@@ -5,8 +5,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
-
 function secTestUser(): User
 {
     $plan = Plan::create([

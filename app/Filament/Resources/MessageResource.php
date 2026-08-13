@@ -4,23 +4,23 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MessageResource\Pages;
 use App\Models\Message;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 
 class MessageResource extends Resource
 {
     protected static ?string $model          = Message::class;
-    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
-    protected static ?string $navigationGroup = 'Monitoring';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+    protected static string|\UnitEnum|null    $navigationGroup = 'Monitoring';
     protected static ?int    $navigationSort  = 1;
     protected static bool    $canCreate      = false;
 
     public static function canCreate(): bool  { return false; }
     public static function canEdit($record): bool { return false; }
 
-    public static function form(Form $form): Form { return $form->schema([]); }
+    public static function form(Schema $schema): Schema { return $schema->schema([]); }
 
     public static function table(Table $table): Table
     {
@@ -34,9 +34,11 @@ class MessageResource extends Resource
                     ->label('Device')->searchable(),
                 Tables\Columns\TextColumn::make('to_number')
                     ->label('To')->searchable(),
-                Tables\Columns\BadgeColumn::make('type')
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
                     ->colors(['primary' => 'text', 'success' => 'image', 'warning' => 'document']),
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
                     ->colors([
                         'success' => fn ($s) => in_array($s, ['sent','delivered','read']),
                         'danger'  => 'failed',
@@ -56,7 +58,7 @@ class MessageResource extends Resource
                     ->label('Today only'),
             ])
             ->actions([
-                Tables\Actions\Action::make('view_content')
+                Filament\Actions\Action::make('view_content')
                     ->label('Content')
                     ->icon('heroicon-o-eye')
                     ->modalContent(fn (Message $r) => view('filament.message-content', ['message' => $r]))

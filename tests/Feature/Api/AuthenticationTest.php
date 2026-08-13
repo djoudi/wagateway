@@ -4,8 +4,6 @@ use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Support\Str;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function createPlan(array $attrs = []): Plan

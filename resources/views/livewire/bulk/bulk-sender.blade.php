@@ -1,5 +1,4 @@
-<x-layouts.app title="Bulk Send">
-
+<div>
 {{-- ── Live Progress Banner ────────────────────────────────────────────────── --}}
 @if ($activeJobUuid && in_array($activeJobStatus, ['pending','running']))
 <div class="mb-5 bg-white border-2 border-[#25D366]/50 rounded-2xl p-4"
@@ -108,7 +107,7 @@
                     <span class="text-[10px] text-gray-400">{{ mb_strlen($messageBody) }} / 4096</span>
                 </div>
                 <textarea wire:model="messageBody" rows="4"
-                          placeholder="Type your message…&#10;Use {{name}} or {{company}} for personalisation."
+                          placeholder="Type your message…&#10;Use @{{name}} or @{{company}} for personalisation."
                           class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none
                                  focus:border-[#25D366] focus:ring-2 focus:ring-[#25D366]/20 resize-y transition-all"></textarea>
                 @error('messageBody')
@@ -303,5 +302,4 @@
         </div>
     </div>
 @endif
-
-</x-layouts.app>
+</div>

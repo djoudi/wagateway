@@ -1,5 +1,4 @@
-<x-layouts.app title="Devices">
-
+<div>
     {{-- Header --}}
     <div class="flex items-center justify-between mb-5">
         <div>
@@ -176,5 +175,4 @@
         </div>
     </div>
     @endif
-
-</x-layouts.app>
+</div>

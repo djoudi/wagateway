@@ -41,7 +41,7 @@ class Overview extends Component
 
         $this->stats = Cache::remember("dashboard_stats_{$user->id}", 60, function () use ($user) {
             $today     = Message::where('user_id', $user->id)->whereDate('created_at', today());
-            $yesterday = Message::where('user_id', $user->id)->whereDate('created_at', yesterday());
+            $yesterday = Message::where('user_id', $user->id)->whereDate('created_at', now()->subDay());
 
             $todayCount     = $today->clone()->whereIn('status', ['sent','delivered','read'])->count();
             $yesterdayCount = $yesterday->clone()->whereIn('status', ['sent','delivered','read'])->count();

@@ -120,7 +120,7 @@ RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
     -vvv
 
 COPY . .
-RUN composer dump-autoload --optimize --no-dev \
+RUN composer dump-autoload --optimize --no-dev --no-scripts \
  && chown -R wagateway:wagateway /var/www/html \
  && chmod -R 775 storage bootstrap/cache
 

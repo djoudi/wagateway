@@ -6,6 +6,21 @@
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>{{ $title ?? 'WaGateway' }}</title>
 
+    <script>
+        // Runtime Reverb/Echo config injected by Blade — env is only
+        // available at runtime in containerised deploys, not at Vite build.
+        @php
+            $reverbApps = config('reverb.apps.apps.0', []);
+            $reverbOpts = $reverbApps['options'] ?? [];
+        @endphp
+        window.WaGatewayConfig = {
+            reverb_app_key: @json($reverbApps['app_key'] ?? null),
+            reverb_host:    @json($reverbOpts['host'] ?? null),
+            reverb_port:    @json((int) ($reverbOpts['port'] ?? 80)),
+            reverb_scheme:  @json($reverbOpts['scheme'] ?? 'http'),
+        };
+    </script>
+
     <!-- Tabler Icons CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
     <!-- Google Fonts -->

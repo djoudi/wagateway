@@ -130,6 +130,28 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         return $this->isAdmin();
     }
 
+    // ─── Transient API keys (test-only, never persisted) ─────────────────────
+
+    /**
+     * @var array{live: ?string, test: ?string}
+     */
+    protected array $transientApiKeys = ['live' => null, 'test' => null];
+
+    public function setTransientApiKeys(string $live, string $test): void
+    {
+        $this->transientApiKeys = ['live' => $live, 'test' => $test];
+    }
+
+    public function getRawApiKeyAttribute(): ?string
+    {
+        return $this->transientApiKeys['live'];
+    }
+
+    public function getRawApiKeyTestAttribute(): ?string
+    {
+        return $this->transientApiKeys['test'];
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_suspended', false)

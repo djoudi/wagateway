@@ -1,5 +1,4 @@
-<x-layouts.app title="Dashboard">
-
+<div>
 {{-- ── Onboarding Checklist (shown only to new users) ─────────────────────── --}}
 @if (!empty($onboarding) && !($onboarding['completed'] ?? true))
 <div class="mb-5 bg-gradient-to-r from-[#25D366]/10 to-white border border-[#25D366]/30 rounded-2xl p-5">
@@ -225,5 +224,4 @@
         </a>
     @endforeach
 </div>
-
-</x-layouts.app>
+</div>

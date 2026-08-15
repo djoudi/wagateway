@@ -1,5 +1,4 @@
-<x-layouts.app title="Webhooks">
-
+<div>
 <div class="grid grid-cols-3 gap-4">
 
     {{-- ── Webhooks list ───────────────────────────────────────────────────── --}}
@@ -167,5 +166,4 @@
         </div>
     </div>
 @endif
-
-</x-layouts.app>
+</div>

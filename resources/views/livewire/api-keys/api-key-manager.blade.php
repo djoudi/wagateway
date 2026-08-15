@@ -1,5 +1,4 @@
-<x-layouts.app title="API Keys">
-
+<div>
 {{-- ── One-time key flash ────────────────────────────────────────────────── --}}
 @if ($newKeyFlash)
 <div class="mb-5 bg-amber-50 border-2 border-amber-300 rounded-2xl p-5">
@@ -197,5 +196,4 @@
     </div>
 </div>
 @endif
-
-</x-layouts.app>
+</div>

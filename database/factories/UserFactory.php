@@ -50,8 +50,7 @@ class UserFactory extends Factory
             $user->api_key_test_prefix = substr($testRaw, 0, 12);
 
             // Stash raw keys for test assertions (not persisted)
-            $user->setAttribute('raw_api_key', $liveRaw);
-            $user->setAttribute('raw_api_key_test', $testRaw);
+            $user->setTransientApiKeys($liveRaw, $testRaw);
         })->afterCreating(function (User $user) {
             // afterMaking doesn't persist — re-save to ensure hash columns are stored
             $user->saveQuietly();

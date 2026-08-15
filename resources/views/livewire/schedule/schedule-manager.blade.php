@@ -1,5 +1,4 @@
-<x-layouts.app title="Scheduler">
-
+<div>
 {{-- Stats bar --}}
 <div class="flex items-center gap-3 mb-5">
     @foreach ([
@@ -196,5 +195,4 @@
         </div>
     </div>
 @endif
-
-</x-layouts.app>
+</div>

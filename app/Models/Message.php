@@ -4,12 +4,14 @@ namespace App\Models;
 
 use App\Enums\MessageStatus;
 use App\Enums\MessageType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class Message extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'uuid','user_id','device_id','to_number','type','content',
         'status','wa_message_id','error_message','retry_count',

@@ -6,8 +6,9 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Models\Plan;
 use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,14 +16,14 @@ use Illuminate\Database\Eloquent\Builder;
 class UserResource extends Resource
 {
     protected static ?string $model         = User::class;
-    protected static ?string $navigationIcon = 'heroicon-o-users';
-    protected static ?string $navigationGroup = 'Management';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+    protected static string|\UnitEnum|null    $navigationGroup = 'Management';
     protected static ?int    $navigationSort  = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Account')->schema([
+        return $schema->schema([
+            Section::make('Account')->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()->maxLength(255),
                 Forms\Components\TextInput::make('email')
@@ -32,7 +33,7 @@ class UserResource extends Resource
                     ->required(fn (string $context) => $context === 'create'),
             ])->columns(2),
 
-            Forms\Components\Section::make('Subscription')->schema([
+            Section::make('Subscription')->schema([
                 Forms\Components\Select::make('plan_id')
                     ->label('Plan')
                     ->options(Plan::pluck('name', 'id'))
@@ -71,22 +72,22 @@ class UserResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_suspended')->label('Suspended'),
             ])
             ->actions([
-                Tables\Actions\Action::make('generate_keys')
+                Filament\Actions\Action::make('generate_keys')
                     ->label('Regen API Keys')
                     ->icon('heroicon-o-key')
                     ->action(fn (User $record) => $record->generateApiKeys())
                     ->requiresConfirmation(),
-                Tables\Actions\Action::make('suspend')
+                Filament\Actions\Action::make('suspend')
                     ->label(fn (User $r) => $r->is_suspended ? 'Unsuspend' : 'Suspend')
                     ->icon('heroicon-o-no-symbol')
                     ->color('danger')
                     ->action(fn (User $r) => $r->update(['is_suspended' => ! $r->is_suspended]))
                     ->requiresConfirmation(),
-                Tables\Actions\EditAction::make(),
+                Filament\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                Filament\Actions\BulkActionGroup::make([
+                    Filament\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

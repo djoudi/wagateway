@@ -11,8 +11,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
     use HasFactory, Notifiable;
 
@@ -121,6 +123,33 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return in_array($this->email, config('wagateway.admin_emails', []));
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->isAdmin();
+    }
+
+    // ─── Transient API keys (test-only, never persisted) ─────────────────────
+
+    /**
+     * @var array{live: ?string, test: ?string}
+     */
+    protected array $transientApiKeys = ['live' => null, 'test' => null];
+
+    public function setTransientApiKeys(string $live, string $test): void
+    {
+        $this->transientApiKeys = ['live' => $live, 'test' => $test];
+    }
+
+    public function getRawApiKeyAttribute(): ?string
+    {
+        return $this->transientApiKeys['live'];
+    }
+
+    public function getRawApiKeyTestAttribute(): ?string
+    {
+        return $this->transientApiKeys['test'];
     }
 
     public function scopeActive($query)

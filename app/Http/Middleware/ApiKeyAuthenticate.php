@@ -61,7 +61,7 @@ class ApiKeyAuthenticate
 
             if (now()->isAfter($hardCutoff)) {
                 return $this->error(402, 'SUBSCRIPTION_EXPIRED',
-                    'Your subscription has expired. Renew at ' . url('/app/billing'));
+                    'Your subscription has expired. Renew at ' . url('/dashboard/billing'));
             }
             // Within grace period: request proceeds, but flagged so the
             // response carries a renewal warning (see finally block below).
@@ -80,7 +80,7 @@ class ApiKeyAuthenticate
 
         if ($request->attributes->get('_grace_period_active')) {
             $response->headers->set('X-WG-Subscription-Warning', 'expired-grace-period-active');
-            $response->headers->set('X-WG-Renew-Url', url('/app/billing'));
+            $response->headers->set('X-WG-Renew-Url', url('/dashboard/billing'));
         }
 
         return $response;

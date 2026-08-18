@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Support\Str;
 
 class Webhook extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'uuid','user_id','name','url','secret',
         'events','is_active','success_count','failure_count','last_triggered_at',

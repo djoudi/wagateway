@@ -140,8 +140,11 @@ sudo cp /etc/letsencrypt/live/yourdomain.com/privkey.pem   docker/ssl/key.pem
 سهّل EasyPanel النشر عبر **حاوية واحدة شاملة** تحتوي PHP-FPM + Nginx + Reverb + Horizon + Scheduler + wa-service، وتُدار بواسطة Supervisor:
 
 ```bash
-docker compose -f docker-compose.single.yml up -d --build
+# النشر على EasyPanel يستخدم docker-compose.easypanel.yml (الحاوية الشاملة)
+docker compose -f docker-compose.easypanel.yml up -d --build
 ```
+
+> ملاحظة: المسار متعدد الخدمات القديم (`docker/Dockerfile.app` + `docker-compose.yml`) ما زال متاحاً للنشر الكلاسيكي على خادم VPS عبر `deploy.sh`، لكن **النشر الموصى به على EasyPanel هو الحاوية الشاملة**.
 
 **الخدمات في هذا النموذج:**
 - `app` — الحاوية الشاملة (تعرض المنفذ `80`، تُبنى من `Dockerfile.single`)
@@ -154,6 +157,8 @@ docker compose -f docker-compose.single.yml up -d --build
 - Traefik ينهي SSL عند الحافة ويرسل HTTP داخلياً — لا حاجة لكتلة HTTPS في nginx.
 - لوحة التحكم على `/dashboard` (وليس `/app`) لتجنب تعارض مسار Reverb (`/app/*` محجوز للـ WebSocket).
 - إعدادات Reverb للواجهة تُحقن وقت التشغيل من Blade عبر `window.WaGatewayConfig` — لا حاجة لمتغيرات `VITE_*` وقت البناء.
+- أصول Vite تُبنى **داخل** الصورة (`npm ci && npm run build`) — لا تعتمد على `public/build` من المضيف.
+- healthcheck يستخدم `GET /up` (مسجّل تلقائياً في Laravel).
 
 ---
 

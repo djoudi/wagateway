@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-alpine AS base
+FROM php:8.5-fpm-alpine AS base
 
 # ─────────────────────────────────────────────────────────────────────────
 # System dependencies (PHP + Nginx + Supervisor + Node.js + Chromium)
@@ -16,6 +16,7 @@ RUN apk add --no-cache \
     chromium \
     fonts-noto-color-emoji \
     font-noto-mono \
+    su-exec \
     linux-headers \
     $PHPIZE_DEPS \
     postgresql-dev \
@@ -56,6 +57,8 @@ RUN yes '' | pecl install redis \
 RUN mkdir -p /var/log/php \
  && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php.ini "$PHP_INI_DIR/conf.d/99-wagateway.ini"
+# Use our dedicated pool (workers run as wagateway to match file ownership).
+COPY docker/php-fpm-www.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -79,9 +82,15 @@ RUN COMPOSER_MEMORY_LIMIT=-1 COMPOSER_NO_AUDIT=1 composer install \
     -vvv
 
 # ─────────────────────────────────────────────────────────────────────────
+# Application source (before builds so both composer dump-autoload and the
+# Vite build see the real code; public/build from the build context is
+# excluded via .dockerignore so the image-built assets are not overwritten)
+# ─────────────────────────────────────────────────────────────────────────
+COPY . .
+
+# ─────────────────────────────────────────────────────────────────────────
 # Frontend (Vite) — build now so the manifest exists at runtime
 # ─────────────────────────────────────────────────────────────────────────
-COPY package.json package-lock.json ./
 RUN npm ci && npm run build
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -89,15 +98,12 @@ RUN npm ci && npm run build
 # ─────────────────────────────────────────────────────────────────────────
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
-COPY wa-service/package*.json ./wa-service/
 RUN cd wa-service && npm install --omit=dev
-COPY wa-service/ ./wa-service/
 RUN mkdir -p wa-service/sessions wa-service/src/logs
 
 # ─────────────────────────────────────────────────────────────────────────
-# Application source
+# Runtime layout & permissions
 # ─────────────────────────────────────────────────────────────────────────
-COPY . .
 RUN composer dump-autoload --optimize --no-dev --no-scripts \
  && chown -R wagateway:wagateway /var/www/html \
  && chmod -R 775 storage bootstrap/cache \
@@ -111,9 +117,10 @@ COPY docker/nginx.single.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh \
- && rm -f /etc/nginx/conf.d/default.conf
-
-USER wagateway
+ && rm -f /etc/nginx/conf.d/default.conf \
+ && mkdir -p /var/log/supervisor \
+ && chown -R wagateway:wagateway /var/log/supervisor /var/log/nginx /run/nginx /var/log/php \
+ && chmod 777 /var/log/supervisor
 
 EXPOSE 80
 

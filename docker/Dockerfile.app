@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-alpine AS base
+FROM php:8.5-fpm-alpine AS base
 
 # ─────────────────────────────────────────────────────────────────────────
 # System dependencies
@@ -16,6 +16,8 @@ RUN apk add --no-cache \
     curl \
     unzip \
     zip \
+    nodejs \
+    npm \
     linux-headers \
     $PHPIZE_DEPS \
     postgresql-dev \
@@ -83,7 +85,8 @@ RUN yes '' | pecl install redis \
 # ─────────────────────────────────────────────────────────────────────────
 # PHP configuration
 # ─────────────────────────────────────────────────────────────────────────
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+RUN mkdir -p /var/log/php \
+ && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php.ini "$PHP_INI_DIR/conf.d/99-wagateway.ini"
 
 # Composer
@@ -118,7 +121,8 @@ RUN COMPOSER_MEMORY_LIMIT=-1 COMPOSER_NO_AUDIT=1 composer install \
     -vvv
 
 COPY . .
-RUN composer dump-autoload --optimize --no-dev --no-scripts \
+RUN npm ci && npm run build \
+ && composer dump-autoload --optimize --no-dev --no-scripts \
  && chown -R wagateway:wagateway /var/www/html \
  && chmod -R 775 storage bootstrap/cache
 

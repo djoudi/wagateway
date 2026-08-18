@@ -2,7 +2,7 @@
 set -e
 
 # ─────────────────────────────────────────────────────────────────────────
-# Runtime bootstrap — runs every container start.
+# Runtime bootstrap — runs every container start as root.
 #
 # The platform (EasyPanel/Coolify) injects all configuration via process
 # environment variables at runtime. Laravel's env() helper reads those
@@ -10,7 +10,7 @@ set -e
 # platform (it is a required variable).
 # ─────────────────────────────────────────────────────────────────────────
 
-# Ensure runtime dirs exist and are writable by the container user.
+# Ensure runtime dirs exist and are writable by the container processes.
 mkdir -p /var/log/supervisor /var/log/php /var/log/nginx /run/nginx /var/run
 chown -R wagateway:wagateway /var/log/supervisor /var/log/php /var/log/nginx /run/nginx /var/run || true
 
@@ -20,9 +20,14 @@ if [ -z "${APP_KEY:-}" ]; then
     exit 1
 fi
 
-# Runtime Laravel boot commands.
-php artisan storage:link --no-interaction || true
-php artisan migrate --force --no-interaction
+# Runtime Laravel boot commands — run as wagateway so generated files
+# (storage, bootstrap/cache) keep the same owner as the php-fpm workers.
+su-exec wagateway sh -c '
+    php artisan storage:link --no-interaction || true
+    php artisan migrate --force --no-interaction || true
+    php artisan config:cache --no-interaction || true
+'
 
-# Start all services under supervisord.
+# Start all services under supervisord (runs as root; php-fpm/nginx drop
+# privileges via their own configs).
 exec /usr/bin/supervisord -c /etc/supervisord.conf

@@ -1,10 +1,8 @@
 services:
 
   # ============================================================
-  # WaGateway — single all-in-one container for EasyPanel
+  # WaGateway — single all-in-one container
   # PHP-FPM + Nginx + Reverb + Horizon + Scheduler + wa-service
-  # Everything (incl. Vite assets) is built INTO the image, so no
-  # host bind-mounts are needed — avoids missing public/build.
   # ============================================================
   app:
     build:
@@ -51,13 +49,14 @@ services:
       SESSION_DRIVER: redis
       BROADCAST_CONNECTION: reverb
 
-      # Reverb (internal) — browser config is injected at runtime by Blade
+      # Reverb (internal) + browser-facing
       REVERB_HOST: 0.0.0.0
       REVERB_PORT: "8080"
       REVERB_APP_ID: ${REVERB_APP_ID}
       REVERB_APP_KEY: ${REVERB_APP_KEY}
       REVERB_APP_SECRET: ${REVERB_APP_SECRET}
-      REVERB_ALLOWED_ORIGINS: ${APP_URL}
+      # Browser WebSocket config is injected at runtime by the Blade layout
+      # (window.WaGatewayConfig) — no VITE_* build-time vars required.
 
       # WhatsApp service (same container)
       WA_SERVICE_URL: http://127.0.0.1:3000
@@ -71,9 +70,11 @@ services:
       CHARGILY_API_KEY: ${CHARGILY_API_KEY}
       CHARGILY_WEBHOOK_SECRET: ${CHARGILY_WEBHOOK_SECRET}
 
-      # Logging
-      LOG_CHANNEL: stack
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
     volumes:
       - app_storage:/var/www/html/storage/app
@@ -81,13 +82,6 @@ services:
 
     networks:
       - wg_net
-
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/up || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
 
   # ============================================================
@@ -139,6 +133,8 @@ services:
       - 512mb
       - --maxmemory-policy
       - allkeys-lru
+      - --save
+      - "60 1000"
       - --appendonly
       - "yes"
 

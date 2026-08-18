@@ -23,6 +23,9 @@
         <env name="SESSION_DRIVER"   value="array"/>
         <env name="BROADCAST_CONNECTION" value="log"/>
         <env name="WA_SERVICE_SECRET"    value="test_secret_key_32chars_minimum"/>
-        <env name="REDIS_CLIENT"     value="array"/>
+        <env name="SUBSCRIPTION_GRACE_DAYS" value="0"/>
+        <env name="REDIS_CLIENT"     value="phpredis"/>
+        <env name="REDIS_HOST"       value="127.0.0.1"/>
+        <env name="REDIS_PORT"       value="6379"/>
     </php>
 </phpunit>

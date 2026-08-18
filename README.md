@@ -135,6 +135,31 @@ sudo cp /etc/letsencrypt/live/yourdomain.com/fullchain.pem docker/ssl/cert.pem
 sudo cp /etc/letsencrypt/live/yourdomain.com/privkey.pem   docker/ssl/key.pem
 ```
 
+### 8. النشر على EasyPanel (حاوية واحدة)
+
+سهّل EasyPanel النشر عبر **حاوية واحدة شاملة** تحتوي PHP-FPM + Nginx + Reverb + Horizon + Scheduler + wa-service، وتُدار بواسطة Supervisor:
+
+```bash
+# النشر على EasyPanel يستخدم docker-compose.easypanel.yml (الحاوية الشاملة)
+docker compose -f docker-compose.easypanel.yml up -d --build
+```
+
+> ملاحظة: المسار متعدد الخدمات القديم (`docker/Dockerfile.app` + `docker-compose.yml`) ما زال متاحاً للنشر الكلاسيكي على خادم VPS عبر `deploy.sh`، لكن **النشر الموصى به على EasyPanel هو الحاوية الشاملة**.
+
+**الخدمات في هذا النموذج:**
+- `app` — الحاوية الشاملة (تعرض المنفذ `80`، تُبنى من `Dockerfile.single`)
+- `postgres` — قاعدة البيانات
+- `redis` — كاش/قوائم الانتظار
+
+**المتغيرات المطلوبة في منصة EasyPanel:** `APP_KEY`, `APP_URL`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `REDIS_PASSWORD`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, `REVERB_APP_ID`, `WA_SERVICE_SECRET`, `ADMIN_EMAILS`.
+
+**ملاحظات النشر على EasyPanel:**
+- Traefik ينهي SSL عند الحافة ويرسل HTTP داخلياً — لا حاجة لكتلة HTTPS في nginx.
+- لوحة التحكم على `/dashboard` (وليس `/app`) لتجنب تعارض مسار Reverb (`/app/*` محجوز للـ WebSocket).
+- إعدادات Reverb للواجهة تُحقن وقت التشغيل من Blade عبر `window.WaGatewayConfig` — لا حاجة لمتغيرات `VITE_*` وقت البناء.
+- أصول Vite تُبنى **داخل** الصورة (`npm ci && npm run build`) — لا تعتمد على `public/build` من المضيف.
+- healthcheck يستخدم `GET /up` (مسجّل تلقائياً في Laravel).
+
 ---
 
 ## هيكل الـ API
@@ -410,7 +435,9 @@ wagateway/
 │       ├── sessions/manager.js  # WhatsApp session management
 │       ├── routes/              # Express routes
 │       └── utils/               # Logger, notifier
-├── docker/                      # Nginx config, Dockerfiles
+├── docker/                      # Nginx config, Dockerfiles, supervisord, entrypoint
+├── Dockerfile.single            # Single all-in-one container (EasyPanel)
+├── docker-compose.single.yml    # Compose for the single-container deploy
 ├── docker-compose.yml
 └── .env.example
 ```

@@ -1,5 +1,4 @@
-<x-layouts.app title="Templates">
-
+<div>
 <div class="flex items-center justify-between mb-5">
     <div>
         <h2 class="text-sm font-semibold text-gray-900">Message templates</h2>
@@ -54,7 +53,7 @@
                     <div class="flex flex-wrap gap-1 mb-3">
                         @foreach ($tpl->variables as $var)
                             <span class="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full border border-blue-100 font-mono">
-                                {{ '{{' . $var . '}}' }}
+                                {{ '{' . '{' . $var . '}' . '}' }}
                             </span>
                         @endforeach
                     </div>
@@ -129,10 +128,10 @@
                     <label class="text-xs font-medium text-gray-600">
                         {{ $type === 'text' ? 'Message body' : 'Caption' }} <span class="text-red-400">*</span>
                     </label>
-                    <span class="text-[10px] text-gray-400">Use {{ '{{variable}}' }} for dynamic values</span>
+                    <span class="text-[10px] text-gray-400">Use <code class="font-mono">{{ '{' . '{variable}' . '}' }}</code> for dynamic values</span>
                 </div>
                 <textarea wire:model.live="body" rows="5"
-                          placeholder="مرحبا {{name}}، طلبك رقم #{{order_id}} تم تأكيده."
+                          placeholder="مرحبا @{{name}}، طلبك رقم #@{{order_id}} تم تأكيده."
                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#25D366] focus:ring-1 focus:ring-[#25D366]/30 resize-y transition-all"></textarea>
                 @error('body') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
             </div>
@@ -153,7 +152,7 @@
                     <div class="flex flex-wrap gap-1.5">
                         @foreach ($variables as $i => $var)
                             <span class="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg border border-blue-100 font-mono">
-                                {{ '{{' . $var . '}}' }}
+                                {{ '{' . '{' . $var . '}' . '}' }}
                                 <button wire:click="removeVariable({{ $i }})" class="text-blue-400 hover:text-red-500 transition-colors">
                                     <i class="ti ti-x text-[10px]"></i>
                                 </button>
@@ -161,7 +160,7 @@
                         @endforeach
                     </div>
                 @else
-                    <p class="text-[10px] text-gray-400">Variables are auto-detected from {{ '{{' }}body{{ '}}' }} — or add manually above.</p>
+                    <p class="text-[10px] text-gray-400">Variables are auto-detected from <code class="font-mono">{{ '{' . '{' }}body{{ '}' . '}' }}</code> — or add manually above.</p>
                 @endif
             </div>
 
@@ -196,7 +195,7 @@
                     <p class="text-xs font-medium text-gray-600 mb-2">Fill sample values:</p>
                     @foreach ($previewTemplate->variables as $var)
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-mono text-blue-600 w-28 flex-shrink-0">{{ '{{' . $var . '}}' }}</span>
+                            <span class="text-[10px] font-mono text-blue-600 w-28 flex-shrink-0">{{ '{' . '{' . $var . '}' . '}' }}</span>
                             <input wire:model.live="previewData.{{ $var }}"
                                    type="text" placeholder="Sample value…"
                                    class="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-[#25D366]" />
@@ -226,5 +225,4 @@
         </div>
     </div>
 @endif
-
-</x-layouts.app>
+</div>

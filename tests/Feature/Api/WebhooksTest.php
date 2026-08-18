@@ -6,8 +6,6 @@ use App\Models\Webhook;
 use App\Services\WebhookService;
 use Illuminate\Support\Str;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
-
 function makeWhUser(int $maxWebhooks = 3): User
 {
     $plan = Plan::create([

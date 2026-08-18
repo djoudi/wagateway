@@ -18,7 +18,7 @@ async function createSession(sessionId, retryCount = 0) {
     const client = new Client({
         authStrategy: new LocalAuth({
             clientId: sessionId,
-            dataPath:  path.resolve('/app/sessions'),
+            dataPath:  process.env.SESSION_PATH || path.resolve('/app/sessions'),
         }),
         puppeteer: {
             headless: true,

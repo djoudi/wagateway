@@ -1,5 +1,4 @@
-<x-layouts.app title="Messages">
-
+<div>
     {{-- Summary bar --}}
     <div class="flex items-center gap-4 mb-4 p-3 bg-white rounded-xl border border-gray-100">
         <div class="text-xs text-gray-500">Today: <span class="font-semibold text-gray-900">{{ number_format($summary['total']) }}</span></div>
@@ -126,5 +125,4 @@
             </div>
         @endif
     </div>
-
-</x-layouts.app>
+</div>

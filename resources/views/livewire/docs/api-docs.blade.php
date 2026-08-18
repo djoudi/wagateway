@@ -1,5 +1,4 @@
-<x-layouts.app title="API Docs">
-
+<div>
 <div class="flex gap-4 -mx-5 -mt-5 h-[calc(100vh-52px)]">
 
     {{-- ── Sidebar nav ─────────────────────────────────────────────────────── --}}
@@ -369,5 +368,4 @@ function verify(payload, signature, secret) {
 
     </div>
 </div>
-
-</x-layouts.app>
+</div>

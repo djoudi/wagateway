@@ -1,5 +1,4 @@
-<x-layouts.app title="Billing">
-
+<div>
 @php $user = auth()->user(); @endphp
 
 {{-- Current plan banner --}}
@@ -193,5 +192,4 @@
         </div>
     </div>
 @endif
-
-</x-layouts.app>
+</div>

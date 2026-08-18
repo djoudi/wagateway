@@ -33,7 +33,7 @@ Route::middleware('auth')->group(function () {
 | Dashboard routes (Livewire pages)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified'])->prefix('app')->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
     Route::get('/',          fn () => view('dashboard'))->name('dashboard');
     Route::get('/devices',   fn () => view('devices'))->name('devices');
     Route::get('/messages',  fn () => view('messages'))->name('messages');

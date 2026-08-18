@@ -97,26 +97,16 @@ WORKDIR /var/www/html
 # ─────────────────────────────────────────────────────────────────────────
 # PHP dependencies
 # ─────────────────────────────────────────────────────────────────────────
-# NOTE: no composer.lock is committed yet — this project has never had a
-# real `composer install` run against it before this deployment. This
-# COPY + install resolves and generates the lock file fresh on first
-# build. After your first successful build, copy composer.lock back out
-# of the container and commit it, so future builds are fast and
-# reproducible instead of re-resolving the full dependency tree each time:
-#   docker cp <app-container-name>:/var/www/html/composer.lock ./composer.lock
-#
-# COMPOSER_MEMORY_LIMIT=-1 avoids the dependency solver hitting PHP's
-# default memory limit on larger dependency trees (Filament pulls in a lot).
-# -vvv surfaces composer's actual error text on failure — without it,
+# A committed composer.lock pins the dependency tree (Laravel 13 / Livewire 4 /
+# Filament 5). COMPOSER_MEMORY_LIMIT=-1 avoids the dependency solver hitting
+# PHP's default memory limit on larger dependency trees (Filament pulls in a
+# lot). -vvv surfaces composer's actual error text on failure — without it,
 # build logs only show "exit code: N" with no explanation of what failed.
-# --no-audit disables Composer's advisory-blocking policy, which was
-# rejecting EVERY laravel/framework version (v11.0.0 through the newest
-# v11.55.0 — the entire available range) because each has at least one
-# historical security advisory on record somewhere in its lifetime. This
-# is normal for any actively maintained framework and isn't specific to
-# our version constraint; --no-audit just skips this check at install
-# time. It does not disable Laravel's own security patches — it only
-# skips Composer refusing to install versions with a known-CVE history.
+# COMPOSER_NO_AUDIT=1 skips Composer's advisory check, which is normal for any
+# actively maintained framework and isn't specific to our version constraint.
+# --no-scripts prevents artisan from running during install (no .env exists
+# yet at build time), and the runtime entrypoint runs the Laravel boot
+# commands once environment variables are actually available.
 COPY composer.json composer.lock* ./
 RUN COMPOSER_MEMORY_LIMIT=-1 COMPOSER_NO_AUDIT=1 composer install \
     --no-dev \
@@ -125,11 +115,10 @@ RUN COMPOSER_MEMORY_LIMIT=-1 COMPOSER_NO_AUDIT=1 composer install \
     --prefer-dist \
     --no-interaction \
     --optimize-autoloader \
-    --no-audit \
     -vvv
 
 COPY . .
-RUN composer dump-autoload --optimize --no-dev \
+RUN composer dump-autoload --optimize --no-dev --no-scripts \
  && chown -R wagateway:wagateway /var/www/html \
  && chmod -R 775 storage bootstrap/cache
 

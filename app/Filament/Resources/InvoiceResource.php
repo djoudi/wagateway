@@ -5,9 +5,9 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\InvoiceResource\Pages;
 use App\Models\Invoice;
 use App\Models\SecurityEvent;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
@@ -15,12 +15,12 @@ use Illuminate\Support\Facades\DB;
 class InvoiceResource extends Resource
 {
     protected static ?string $model          = Invoice::class;
-    protected static ?string $navigationIcon = 'heroicon-o-receipt-percent';
-    protected static ?string $navigationGroup = 'Management';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-receipt-percent';
+    protected static string|\UnitEnum|null    $navigationGroup = 'Management';
     protected static ?int    $navigationSort  = 3;
 
     public static function canCreate(): bool { return false; }
-    public static function form(Form $form): Form { return $form->schema([]); }
+    public static function form(Schema $schema): Schema { return $schema->schema([]); }
 
     public static function table(Table $table): Table
     {
@@ -41,7 +41,8 @@ class InvoiceResource extends Resource
                         'warning' => fn ($s) => in_array($s, ['ccp', 'bank_transfer']),
                         'gray'    => 'coupon',
                     ]),
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
                     ->colors([
                         'success' => 'paid',
                         'warning' => 'pending',
@@ -77,7 +78,7 @@ class InvoiceResource extends Resource
                 // for CCP/bank_transfer invoices. Card payments are never
                 // confirmed here; they only ever activate via the signed
                 // Chargily webhook (see ChargilyWebhookController).
-                Tables\Actions\Action::make('confirm_payment')
+                Filament\Actions\Action::make('confirm_payment')
                     ->label('Confirm payment')
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
@@ -111,7 +112,7 @@ class InvoiceResource extends Resource
                             ->send();
                     }),
 
-                Tables\Actions\Action::make('mark_failed')
+                Filament\Actions\Action::make('mark_failed')
                     ->label('Mark failed')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')

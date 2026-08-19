@@ -3,14 +3,8 @@ RUN apt-get update && apt-get install -y chromium fonts-noto-color-emoji libatk-
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 WORKDIR /app
-COPY package*.json ./
-# NOTE: no package-lock.json is committed yet. `npm ci` requires one to
-# already exist and fails hard without it — using `npm install` here so
-# the first build resolves and generates the lock fresh. After your first
-# successful build, copy it out and commit it for reproducible builds:
-#   docker cp wg_wa_service:/app/package-lock.json ./wa-service/package-lock.json
-# Then switch this line back to `npm ci --omit=dev` for faster, locked installs.
-RUN npm install --omit=dev
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 RUN mkdir -p sessions src/logs
 COPY src/ ./src/
 EXPOSE 3000

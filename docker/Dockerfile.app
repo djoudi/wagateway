@@ -48,7 +48,13 @@ RUN apk add --no-cache \
 # (Zend/zend_language_parser.y), which is consumed during PHP's own core
 # build and isn't meant to be regenerated as a standalone module — this
 # is exactly the "No rule to make target zend_language_parser.y" error.
-RUN docker-php-ext-install pdo_pgsql bcmath opcache pcntl sockets
+# Each extension is installed in its own RUN so a build failure names the
+# exact culprit instead of a combined command.
+RUN docker-php-ext-install pdo_pgsql
+RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install opcache
+RUN docker-php-ext-install pcntl
+RUN docker-php-ext-install sockets
 
 # Defensive check: confirm the bundled extensions above are actually
 # present on this base image. If a future PHP/Alpine release ever ships

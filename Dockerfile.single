@@ -32,11 +32,11 @@ RUN apk add --no-cache \
 # ─────────────────────────────────────────────────────────────────────────
 # PHP extensions (same groups as the multi-container build)
 # ─────────────────────────────────────────────────────────────────────────
-RUN docker-php-ext-install pdo_pgsql
-RUN docker-php-ext-install bcmath
-RUN docker-php-ext-install opcache
-RUN docker-php-ext-install pcntl
-RUN docker-php-ext-install sockets
+RUN for ext in pdo_pgsql bcmath opcache pcntl sockets; do \
+        if ! php -m | grep -qi "$ext"; then \
+            docker-php-ext-install "$ext"; \
+        fi; \
+    done
 
 RUN php -m | grep -qi '^tokenizer$' && php -m | grep -qi '^ctype$' \
  || (echo "ERROR: tokenizer or ctype missing from this PHP base image — they were expected to be bundled by default." && exit 1)

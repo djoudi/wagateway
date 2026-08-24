@@ -10,6 +10,8 @@ FROM php:8.5-fpm-alpine AS base
 #                against, and its absence causes docker-php-ext-install to
 #                fail silently with just "exit code: 2" and no clear message.
 # - oniguruma-dev: required to compile ext-mbstring
+# - lexbor-dev: required to compile ext-dom (PHP 8.4+ uses the lexbor HTML5
+#   parser; without it the build fails with "lexbor/html/parser.h not found")
 RUN apk add --no-cache \
     bash \
     git \
@@ -18,6 +20,7 @@ RUN apk add --no-cache \
     zip \
     nodejs \
     npm \
+    lexbor-dev \
     linux-headers \
     $PHPIZE_DEPS \
     postgresql-dev \

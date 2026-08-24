@@ -17,6 +17,7 @@ RUN apk add --no-cache \
     fonts-noto-color-emoji \
     font-noto-mono \
     su-exec \
+    lexbor-dev \
     linux-headers \
     $PHPIZE_DEPS \
     postgresql-dev \

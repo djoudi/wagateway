@@ -10,8 +10,6 @@ FROM php:8.5-fpm-alpine AS base
 #                against, and its absence causes docker-php-ext-install to
 #                fail silently with just "exit code: 2" and no clear message.
 # - oniguruma-dev: required to compile ext-mbstring
-# - lexbor-dev: required to compile ext-dom (PHP 8.4+ uses the lexbor HTML5
-#   parser; without it the build fails with "lexbor/html/parser.h not found")
 RUN apk add --no-cache \
     bash \
     git \
@@ -20,7 +18,6 @@ RUN apk add --no-cache \
     zip \
     nodejs \
     npm \
-    lexbor-dev \
     linux-headers \
     $PHPIZE_DEPS \
     postgresql-dev \
@@ -72,17 +69,20 @@ RUN php -m | grep -qi '^tokenizer$' && php -m | grep -qi '^ctype$' \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install gd exif
 
-# XML family (dompdf: ext-dom; general: ext-xml, ext-simplexml)
-RUN docker-php-ext-install xml dom simplexml
-
-# Multibyte strings (Laravel core requirement)
-RUN docker-php-ext-install mbstring
-
-# Internationalization (Filament hard-requires this)
-RUN docker-php-ext-install intl
-
-# Archive handling (Laravel file export/import features)
-RUN docker-php-ext-install zip
+# XML family (dompdf: ext-dom; general: ext-xml, ext-simplexml).
+# PHP 8.4+ dom uses the lexbor HTML5 parser, bundled as its own PHP
+# extension (ext/lexbor) in the PHP source — it must be installed BEFORE
+# dom (PHP_ADD_EXTENSION_DEP(dom, lexbor)). Do NOT use Alpine's lexbor-dev
+# package: it is an older standalone library and fails to compile dom
+# ("struct lxb_html_tree has no member named has_explicit_html_tag").
+# xml/dom/simplexml/mbstring are compiled into the base PHP by default in
+# some images, so skip any extension already reported by php -m.
+RUN if ! php -m | grep -qi "lexbor"; then docker-php-ext-install lexbor; fi
+RUN for ext in xml dom simplexml mbstring intl zip; do \
+        if ! php -m | grep -qi "$ext"; then \
+            docker-php-ext-install "$ext"; \
+        fi; \
+    done
 
 # Redis extension — `pecl install redis` asks several interactive yes/no
 # questions during configure (igbinary/lzf/zstd/msgpack serializer support).

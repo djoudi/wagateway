@@ -65,9 +65,12 @@ RUN for ext in pdo_pgsql bcmath opcache pcntl sockets; do \
 RUN php -m | grep -qi '^tokenizer$' && php -m | grep -qi '^ctype$' \
  || (echo "ERROR: tokenizer or ctype missing from this PHP base image — they were expected to be bundled by default." && exit 1)
 
-# Image handling
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install gd exif
+# Image handling — gd needs a custom configure (freetype+jpeg).
+RUN if ! php -m | grep -qi "^gd$"; then \
+        docker-php-ext-configure gd --with-freetype --with-jpeg \
+     && docker-php-ext-install gd; \
+    fi
+RUN if ! php -m | grep -qi "^exif$"; then docker-php-ext-install exif; fi
 
 # XML family (dompdf: ext-dom; general: ext-xml, ext-simplexml).
 # PHP 8.4+ dom uses the lexbor HTML5 parser, bundled as its own PHP
@@ -90,8 +93,10 @@ RUN for ext in xml dom simplexml mbstring intl zip; do \
 # `docker build`, so it fails silently with exit code 1 and no useful
 # error text. `yes ''` feeds it an endless stream of blank lines, which
 # auto-accepts every prompt's default answer, however many there are.
-RUN yes '' | pecl install redis \
- && docker-php-ext-enable redis
+RUN if ! php -m | grep -qi "^redis$"; then \
+        yes '' | pecl install redis \
+     && docker-php-ext-enable redis; \
+    fi
 
 # ─────────────────────────────────────────────────────────────────────────
 # PHP configuration

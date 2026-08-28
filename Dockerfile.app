@@ -94,18 +94,21 @@ RUN if ! php -m | grep -qi "^redis$"; then \
      && docker-php-ext-enable redis; \
     fi
 
+# Non-root user (created before /var/log/php so it can be chowned there)
+RUN addgroup -g 1001 wagateway && adduser -u 1001 -G wagateway -s /bin/sh -D wagateway
+
 # ─────────────────────────────────────────────────────────────────────────
 # PHP configuration
 # ─────────────────────────────────────────────────────────────────────────
 RUN mkdir -p /var/log/php \
+ && chown -R wagateway:wagateway /var/log/php \
+ && touch /var/log/php/error.log \
+ && chown wagateway:wagateway /var/log/php/error.log \
  && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php.ini "$PHP_INI_DIR/conf.d/99-wagateway.ini"
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Non-root user
-RUN addgroup -g 1001 wagateway && adduser -u 1001 -G wagateway -s /bin/sh -D wagateway
 
 WORKDIR /var/www/html
 

@@ -1,23 +1,21 @@
 FROM php:8.5-fpm-alpine AS base
 
 # ─────────────────────────────────────────────────────────────────────────
-# System dependencies
+# Core runtime (must succeed — nginx/supervisor live here)
+# Debian font names (fonts-noto-color-emoji) do not exist on Alpine and
+# would abort this entire apk add, so Chromium/fonts are a separate step.
 # ─────────────────────────────────────────────────────────────────────────
-# - icu-dev:     required to compile ext-intl (Filament hard-requires this)
-# - libxml2-dev: covers dom/simplexml (dompdf hard-requires ext-dom)
-# - libzip-dev:  required to compile ext-zip — NOT the same as the zip/unzip
-#                CLI utilities below; this is the C library ext-zip links
-#                against, and its absence causes docker-php-ext-install to
-#                fail silently with just "exit code: 2" and no clear message.
-# - oniguruma-dev: required to compile ext-mbstring
 RUN apk add --no-cache \
     bash \
     git \
     curl \
     unzip \
     zip \
+    nginx \
+    supervisor \
     nodejs \
     npm \
+    su-exec \
     linux-headers \
     $PHPIZE_DEPS \
     postgresql-dev \
@@ -28,40 +26,29 @@ RUN apk add --no-cache \
     libxml2-dev \
     freetype-dev \
     libjpeg-turbo-dev \
-    libpng-dev
+    libpng-dev \
+ && nginx -v \
+ && command -v supervisord
+
+# Chromium for whatsapp-web.js / Puppeteer (Alpine package names).
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
+    font-noto \
+    font-noto-emoji
 
 # ─────────────────────────────────────────────────────────────────────────
-# PHP extensions — installed in isolated groups rather than one combined
-# command. If any single extension ever fails to compile, the build log
-# points at the exact one-line RUN step that failed instead of a bundled
-# command where the actual culprit is ambiguous. Every group below has
-# been individually confirmed to build successfully.
+# PHP extensions (same groups as the multi-container build)
 # ─────────────────────────────────────────────────────────────────────────
-
-# Core / database
-# NOTE: tokenizer and ctype are deliberately NOT in this list. They are
-# bundled/core PHP extensions — compiled directly into the PHP binary and
-# enabled by default on every standard build, official Docker images
-# included. They are not loadable modules and were never meant to be
-# built via docker-php-ext-install: doing so fails because ext/tokenizer's
-# source depends on Zend's own parser grammar file
-# (Zend/zend_language_parser.y), which is consumed during PHP's own core
-# build and isn't meant to be regenerated as a standalone module — this
-# is exactly the "No rule to make target zend_language_parser.y" error.
-# Install extensions one-by-one, skipping any already compiled into the
-# base image (e.g. PDO became a core/always-on extension in PHP 8.4+ and
-# cannot be built as a shared module). Checking php -m makes the build
-# robust to future base-image changes.
 RUN for ext in pdo_pgsql bcmath opcache pcntl sockets; do \
         if ! php -m | grep -qi "$ext"; then \
             docker-php-ext-install "$ext"; \
         fi; \
     done
 
-# Defensive check: confirm the bundled extensions above are actually
-# present on this base image. If a future PHP/Alpine release ever ships
-# without them, this fails the build immediately with a clear message
-# instead of surfacing as a confusing composer/runtime error much later.
 RUN php -m | grep -qi '^tokenizer$' && php -m | grep -qi '^ctype$' \
  || (echo "ERROR: tokenizer or ctype missing from this PHP base image — they were expected to be bundled by default." && exit 1)
 
@@ -87,50 +74,33 @@ RUN for ext in xml dom simplexml mbstring intl zip; do \
         fi; \
     done
 
-# Redis extension — `pecl install redis` asks several interactive yes/no
-# questions during configure (igbinary/lzf/zstd/msgpack serializer support).
-# There is nothing on stdin to answer them during a non-interactive
-# `docker build`, so it fails silently with exit code 1 and no useful
-# error text. `yes ''` feeds it an endless stream of blank lines, which
-# auto-accepts every prompt's default answer, however many there are.
 RUN if ! php -m | grep -qi "^redis$"; then \
         yes '' | pecl install redis \
      && docker-php-ext-enable redis; \
     fi
 
-# Non-root user (created before /var/log/php so it can be chowned there)
-RUN addgroup -g 1001 wagateway && adduser -u 1001 -G wagateway -s /bin/sh -D wagateway
-
 # ─────────────────────────────────────────────────────────────────────────
 # PHP configuration
 # ─────────────────────────────────────────────────────────────────────────
 RUN mkdir -p /var/log/php \
- && chown -R wagateway:wagateway /var/log/php \
- && touch /var/log/php/error.log \
- && chown wagateway:wagateway /var/log/php/error.log \
  && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php.ini "$PHP_INI_DIR/conf.d/99-wagateway.ini"
+# Use our dedicated pool (workers run as wagateway to match file ownership).
+# Overwrite zz-docker.conf so the stock [www] pool does not also bind :9000.
 COPY docker/php-fpm-www.conf /usr/local/etc/php-fpm.d/www.conf
 RUN printf '[global]\ndaemonize = no\n' > /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Non-root user
+RUN addgroup -g 1001 wagateway && adduser -u 1001 -G wagateway -s /bin/sh -D wagateway
+
 WORKDIR /var/www/html
 
 # ─────────────────────────────────────────────────────────────────────────
-# PHP dependencies
+# PHP dependencies (Laravel)
 # ─────────────────────────────────────────────────────────────────────────
-# A committed composer.lock pins the dependency tree (Laravel 13 / Livewire 4 /
-# Filament 5). COMPOSER_MEMORY_LIMIT=-1 avoids the dependency solver hitting
-# PHP's default memory limit on larger dependency trees (Filament pulls in a
-# lot). -vvv surfaces composer's actual error text on failure — without it,
-# build logs only show "exit code: N" with no explanation of what failed.
-# COMPOSER_NO_AUDIT=1 skips Composer's advisory check, which is normal for any
-# actively maintained framework and isn't specific to our version constraint.
-# --no-scripts prevents artisan from running during install (no .env exists
-# yet at build time), and the runtime entrypoint runs the Laravel boot
-# commands once environment variables are actually available.
 COPY composer.json composer.lock* ./
 RUN COMPOSER_MEMORY_LIMIT=-1 COMPOSER_NO_AUDIT=1 composer install \
     --no-dev \
@@ -141,12 +111,53 @@ RUN COMPOSER_MEMORY_LIMIT=-1 COMPOSER_NO_AUDIT=1 composer install \
     --optimize-autoloader \
     -vvv
 
+# ─────────────────────────────────────────────────────────────────────────
+# Application source (before builds so both composer dump-autoload and the
+# Vite build see the real code; public/build from the build context is
+# excluded via .dockerignore so the image-built assets are not overwritten)
+# ─────────────────────────────────────────────────────────────────────────
 COPY . .
-RUN npm ci && npm run build \
- && composer dump-autoload --optimize --no-dev --no-scripts \
- && chown -R wagateway:wagateway /var/www/html \
- && chmod -R 775 storage bootstrap/cache
 
-USER wagateway
-EXPOSE 9000
-CMD ["php-fpm"]
+# ─────────────────────────────────────────────────────────────────────────
+# Frontend (Vite) — build now so the manifest exists at runtime
+# ─────────────────────────────────────────────────────────────────────────
+RUN npm ci && npm run build
+
+# ─────────────────────────────────────────────────────────────────────────
+# wa-service (Node.js WhatsApp service)
+# ─────────────────────────────────────────────────────────────────────────
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+RUN cd wa-service && npm install --omit=dev
+RUN mkdir -p wa-service/sessions wa-service/src/logs
+
+# ─────────────────────────────────────────────────────────────────────────
+# Runtime layout & permissions
+# ─────────────────────────────────────────────────────────────────────────
+RUN composer dump-autoload --optimize --no-dev --no-scripts \
+ && chown -R wagateway:wagateway /var/www/html \
+ && chmod -R 775 storage bootstrap/cache \
+ && mkdir -p /var/log/nginx /run/nginx \
+ && chown -R wagateway:wagateway /var/log/nginx /run/nginx /var/log/php \
+ && touch /var/log/php/error.log \
+ && chown wagateway:wagateway /var/log/php/error.log
+
+# Nginx + Supervisor config
+COPY docker/nginx.main.conf /etc/nginx/nginx.conf
+COPY docker/nginx.single.conf /etc/nginx/http.d/default.conf
+RUN mkdir -p /etc/nginx/conf.d /var/log/nginx /run \
+ && rm -f /etc/nginx/http.d/default.conf.bak \
+ && nginx -t
+COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh \
+ && mkdir -p /var/log/supervisor \
+ && chown -R wagateway:wagateway /var/log/supervisor /var/log/nginx /run/nginx /var/log/php \
+ && chmod 777 /var/log/supervisor
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
+    CMD curl -fsS http://127.0.0.1/up >/dev/null || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]

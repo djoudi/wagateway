@@ -147,7 +147,7 @@ docker compose -f docker-compose.easypanel.yml up -d --build
 > ملاحظة: المسار متعدد الخدمات القديم (`docker/Dockerfile.app` + `docker-compose.yml`) ما زال متاحاً للنشر الكلاسيكي على خادم VPS عبر `deploy.sh`، لكن **النشر الموصى به على EasyPanel هو الحاوية الشاملة**.
 
 **الخدمات في هذا النموذج:**
-- `app` — الحاوية الشاملة (تعرض المنفذ `80`، تُبنى من `Dockerfile.single`)
+- `app` — الحاوية الشاملة (تعرض المنفذ `80`، تُبنى من `Dockerfile`)
 - `postgres` — قاعدة البيانات
 - `redis` — كاش/قوائم الانتظار
 
@@ -436,7 +436,9 @@ wagateway/
 │       ├── routes/              # Express routes
 │       └── utils/               # Logger, notifier
 ├── docker/                      # Nginx config, Dockerfiles, supervisord, entrypoint
-├── Dockerfile.single            # Single all-in-one container (EasyPanel)
+├── Dockerfile                   # Single all-in-one container (EasyPanel / default)
+├── Dockerfile.single            # Alias of Dockerfile (same image)
+├── docker-compose.easypanel.yml # EasyPanel compose (app + postgres + redis)
 ├── docker-compose.single.yml    # Compose for the single-container deploy
 ├── docker-compose.yml
 └── .env.example

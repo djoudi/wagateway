@@ -106,6 +106,8 @@ RUN mkdir -p /var/log/php \
  && chown wagateway:wagateway /var/log/php/error.log \
  && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php.ini "$PHP_INI_DIR/conf.d/99-wagateway.ini"
+COPY docker/php-fpm-www.conf /usr/local/etc/php-fpm.d/www.conf
+RUN printf '[global]\ndaemonize = no\n' > /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

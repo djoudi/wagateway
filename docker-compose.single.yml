@@ -7,7 +7,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.single
+      dockerfile: Dockerfile
 
     restart: unless-stopped
 
@@ -70,18 +70,19 @@ services:
       CHARGILY_API_KEY: ${CHARGILY_API_KEY}
       CHARGILY_WEBHOOK_SECRET: ${CHARGILY_WEBHOOK_SECRET}
 
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
     volumes:
       - app_storage:/var/www/html/storage/app
       - wa_sessions:/var/www/html/wa-service/sessions
 
     networks:
       - wg_net
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/up >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
 
   # ============================================================

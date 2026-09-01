@@ -14,6 +14,17 @@ set -e
 mkdir -p /var/log/supervisor /var/log/php /var/log/nginx /run/nginx /var/run
 chown -R wagateway:wagateway /var/log/supervisor /var/log/php /var/log/nginx /run/nginx /var/run || true
 
+if ! command -v nginx >/dev/null 2>&1 && [ ! -x /usr/sbin/nginx ]; then
+    echo "ERROR: nginx is not installed in this image. Rebuild from the root Dockerfile (all-in-one), not docker/Dockerfile.app." >&2
+    exit 1
+fi
+if ! command -v supervisord >/dev/null 2>&1 && [ ! -x /usr/bin/supervisord ]; then
+    echo "ERROR: supervisord is not installed in this image. Rebuild from the root Dockerfile." >&2
+    exit 1
+fi
+
+nginx -t
+
 # Guard: without an app key Laravel cannot boot. Fail fast with a clear message.
 if [ -z "${APP_KEY:-}" ]; then
     echo "ERROR: APP_KEY is not set. Set APP_KEY (and APP_URL, DB_*, REDIS_*, REVERB_*, WA_SERVICE_SECRET) in the platform environment." >&2

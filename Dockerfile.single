@@ -1,7 +1,9 @@
 FROM php:8.5-fpm-alpine AS base
 
 # ─────────────────────────────────────────────────────────────────────────
-# System dependencies (PHP + Nginx + Supervisor + Node.js + Chromium)
+# Core runtime (must succeed — nginx/supervisor live here)
+# Debian font names (fonts-noto-color-emoji) do not exist on Alpine and
+# would abort this entire apk add, so Chromium/fonts are a separate step.
 # ─────────────────────────────────────────────────────────────────────────
 RUN apk add --no-cache \
     bash \
@@ -13,9 +15,6 @@ RUN apk add --no-cache \
     supervisor \
     nodejs \
     npm \
-    chromium \
-    fonts-noto-color-emoji \
-    font-noto-mono \
     su-exec \
     linux-headers \
     $PHPIZE_DEPS \
@@ -27,7 +26,19 @@ RUN apk add --no-cache \
     libxml2-dev \
     freetype-dev \
     libjpeg-turbo-dev \
-    libpng-dev
+    libpng-dev \
+ && nginx -v \
+ && command -v supervisord
+
+# Chromium for whatsapp-web.js / Puppeteer (Alpine package names).
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
+    font-noto \
+    font-noto-emoji
 
 # ─────────────────────────────────────────────────────────────────────────
 # PHP extensions (same groups as the multi-container build)
@@ -132,11 +143,14 @@ RUN composer dump-autoload --optimize --no-dev --no-scripts \
  && chown wagateway:wagateway /var/log/php/error.log
 
 # Nginx + Supervisor config
+COPY docker/nginx.main.conf /etc/nginx/nginx.conf
 COPY docker/nginx.single.conf /etc/nginx/http.d/default.conf
+RUN mkdir -p /etc/nginx/conf.d /var/log/nginx /run \
+ && rm -f /etc/nginx/http.d/default.conf.bak \
+ && nginx -t
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh \
- && rm -f /etc/nginx/conf.d/default.conf \
  && mkdir -p /var/log/supervisor \
  && chown -R wagateway:wagateway /var/log/supervisor /var/log/nginx /run/nginx /var/log/php \
  && chmod 777 /var/log/supervisor

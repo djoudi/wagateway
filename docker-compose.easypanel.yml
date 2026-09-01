@@ -1,13 +1,15 @@
 # ═════════════════════════════════════════════════════════════════════════
-# EasyPanel — single all-in-one container
+# Default compose — single all-in-one container (EasyPanel / Coolify / PaaS)
 # ═════════════════════════════════════════════════════════════════════════
 # PHP-FPM + Nginx + Reverb + Horizon + Scheduler + wa-service, managed by
-# Supervisor. Traefik (EasyPanel) terminates TLS at the edge and forwards
-# plain HTTP to this service on port 80.
+# Supervisor. Traefik terminates TLS at the edge and forwards plain HTTP
+# to this service on port 80.
 #
-# Do NOT use docker/Dockerfile.app here. That image runs php-fpm as PID 1
-# on port 9000 only — Traefik's HTTP probe then fails and EasyPanel SIGQUITs
-# the container after a few seconds (see php-fpm "Finishing ... exiting").
+# Platforms that auto-detect "docker-compose.yml" MUST get this file.
+# The FPM-only image (docker/Dockerfile.app, php-fpm as PID 1 on :9000)
+# is killed by Traefik after ~3s because nothing answers HTTP on :80.
+#
+# Classic multi-container VPS deploy: docker-compose.vps.yml + deploy.sh
 # ═════════════════════════════════════════════════════════════════════════
 
 services:

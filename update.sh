@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+COMPOSE="docker compose -f docker-compose.vps.yml"
+
 echo "── WaGateway Update ───────────────────────────────────────────────────────"
 
 # Enable maintenance mode
@@ -11,19 +13,19 @@ echo "✓ Maintenance mode ON"
 git pull origin main
 
 # Rebuild app container
-docker compose build --no-cache app horizon reverb scheduler
+$COMPOSE build --no-cache app horizon reverb scheduler
 
 # Run migrations
-docker compose run --rm app php artisan migrate --force --no-interaction
+$COMPOSE run --rm app php artisan migrate --force --no-interaction
 echo "✓ Migrations done"
 
 # Clear and re-cache
-docker compose run --rm app php artisan optimize:clear
-docker compose run --rm app php artisan optimize
+$COMPOSE run --rm app php artisan optimize:clear
+$COMPOSE run --rm app php artisan optimize
 echo "✓ Cache refreshed"
 
 # Restart workers
-docker compose restart app horizon reverb scheduler
+$COMPOSE restart app horizon reverb scheduler
 echo "✓ Services restarted"
 
 # Disable maintenance mode

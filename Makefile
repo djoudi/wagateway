@@ -1,5 +1,7 @@
 .PHONY: deploy update logs shell db test horizon restart ssl-setup
 
+COMPOSE_VPS := docker compose -f docker-compose.vps.yml
+
 ## Deploy the application for the first time
 deploy:
 	@bash deploy.sh
@@ -10,7 +12,7 @@ update:
 
 ## Tail all logs
 logs:
-	@docker compose logs -f --tail=50
+	@$(COMPOSE_VPS) logs -f --tail=50
 
 ## Open Laravel shell (tinker)
 shell:
@@ -22,7 +24,7 @@ db:
 
 ## Run tests
 test:
-	@docker compose run --rm -e APP_ENV=testing app php artisan test
+	@$(COMPOSE_VPS) run --rm -e APP_ENV=testing app php artisan test
 
 ## Open Horizon dashboard (shows in browser)
 horizon:
@@ -30,7 +32,7 @@ horizon:
 
 ## Restart all services
 restart:
-	@docker compose restart
+	@$(COMPOSE_VPS) restart
 
 ## Generate SSL with certbot (run after DNS is pointed to server)
 ssl-setup:

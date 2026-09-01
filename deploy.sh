@@ -52,47 +52,47 @@ fi
 # ─── Build ─────────────────────────────────────────────────────────────────────
 echo ""
 echo "── Building containers ────────────────────────────────────────────────────"
-docker compose build --no-cache --parallel
+docker compose -f docker-compose.vps.yml build --no-cache --parallel
 ok "Containers built"
 
 # ─── Start infrastructure ─────────────────────────────────────────────────────
 echo ""
 echo "── Starting infrastructure ────────────────────────────────────────────────"
-docker compose up -d postgres redis
+docker compose -f docker-compose.vps.yml up -d postgres redis
 echo "  Waiting for PostgreSQL and Redis..."
 sleep 10
-docker compose exec postgres pg_isready -U "${DB_USERNAME}" -d "${DB_DATABASE}" || fail "PostgreSQL not ready"
+docker compose -f docker-compose.vps.yml exec postgres pg_isready -U "${DB_USERNAME}" -d "${DB_DATABASE}" || fail "PostgreSQL not ready"
 ok "PostgreSQL ready"
-docker compose exec redis redis-cli -a "${REDIS_PASSWORD}" ping | grep -q PONG || fail "Redis not ready"
+docker compose -f docker-compose.vps.yml exec redis redis-cli -a "${REDIS_PASSWORD}" ping | grep -q PONG || fail "Redis not ready"
 ok "Redis ready"
 
 # ─── Database ──────────────────────────────────────────────────────────────────
 echo ""
 echo "── Database setup ─────────────────────────────────────────────────────────"
-docker compose run --rm app php artisan migrate --force --no-interaction
+docker compose -f docker-compose.vps.yml run --rm app php artisan migrate --force --no-interaction
 ok "Migrations complete"
 
-docker compose run --rm app php artisan db:seed --class=PlanSeeder --force --no-interaction
+docker compose -f docker-compose.vps.yml run --rm app php artisan db:seed --class=PlanSeeder --force --no-interaction
 ok "Plans seeded"
 
 # ─── Optimize ──────────────────────────────────────────────────────────────────
 echo ""
 echo "── Optimizing application ─────────────────────────────────────────────────"
-docker compose run --rm app php artisan config:cache
-docker compose run --rm app php artisan route:cache
-docker compose run --rm app php artisan view:cache
-docker compose run --rm app php artisan event:cache
+docker compose -f docker-compose.vps.yml run --rm app php artisan config:cache
+docker compose -f docker-compose.vps.yml run --rm app php artisan route:cache
+docker compose -f docker-compose.vps.yml run --rm app php artisan view:cache
+docker compose -f docker-compose.vps.yml run --rm app php artisan event:cache
 ok "Application optimized"
 
 # ─── Start all services ────────────────────────────────────────────────────────
 echo ""
 echo "── Starting all services ──────────────────────────────────────────────────"
-docker compose up -d
+docker compose -f docker-compose.vps.yml up -d
 sleep 5
 
 echo ""
 echo "── Service status ─────────────────────────────────────────────────────────"
-docker compose ps
+docker compose -f docker-compose.vps.yml ps
 
 echo ""
 echo "── Post-deployment checks ─────────────────────────────────────────────────"

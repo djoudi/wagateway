@@ -91,22 +91,19 @@ docker run --rm php:8.5-cli php -r "echo 'base64:'.base64_encode(random_bytes(32
 ### 5. تشغيل الخدمات
 
 ```bash
-# بناء وتشغيل جميع الحاويات
+# بناء وتشغيل الحاوية الشاملة (EasyPanel / الافتراضي)
 docker compose up -d --build
 
 # التحقق من حالة الخدمات
 docker compose ps
 ```
 
-يجب أن تظهر 7 خدمات في حالة `running`:
-- `wg_app` — Laravel application
-- `wg_nginx` — Nginx reverse proxy
-- `wg_wa_service` — Node.js WhatsApp engine
-- `wg_postgres` — PostgreSQL database
-- `wg_redis` — Redis cache/queue
-- `wg_horizon` — Queue workers
-- `wg_reverb` — WebSocket server
-- `wg_scheduler` — Cron scheduler
+يجب أن تظهر 3 خدمات في حالة `running`:
+- `app` — الحاوية الشاملة (PHP-FPM + Nginx + Reverb + Horizon + Scheduler + wa-service)
+- `postgres` — PostgreSQL
+- `redis` — Redis
+
+للنشر متعدد الخدمات على VPS استخدم `docker-compose.vps.yml` عبر `./deploy.sh`.
 
 ### 6. تهيئة قاعدة البيانات
 
@@ -140,11 +137,11 @@ sudo cp /etc/letsencrypt/live/yourdomain.com/privkey.pem   docker/ssl/key.pem
 سهّل EasyPanel النشر عبر **حاوية واحدة شاملة** تحتوي PHP-FPM + Nginx + Reverb + Horizon + Scheduler + wa-service، وتُدار بواسطة Supervisor:
 
 ```bash
-# النشر على EasyPanel يستخدم docker-compose.easypanel.yml (الحاوية الشاملة)
-docker compose -f docker-compose.easypanel.yml up -d --build
+# النشر على EasyPanel يستخدم docker-compose.yml الافتراضي (الحاوية الشاملة)
+docker compose up -d --build
 ```
 
-> ملاحظة: المسار متعدد الخدمات القديم (`docker/Dockerfile.app` + `docker-compose.yml`) ما زال متاحاً للنشر الكلاسيكي على خادم VPS عبر `deploy.sh`، لكن **النشر الموصى به على EasyPanel هو الحاوية الشاملة**.
+> ملاحظة: المسار متعدد الخدمات (`docker/Dockerfile.app` + `docker-compose.vps.yml`) ما زال متاحاً للنشر الكلاسيكي على خادم VPS عبر `deploy.sh`. `docker-compose.yml` الافتراضي هو الحاوية الشاملة حتى تكتشفه منصات مثل EasyPanel تلقائياً.
 
 **الخدمات في هذا النموذج:**
 - `app` — الحاوية الشاملة (تعرض المنفذ `80`، تُبنى من `Dockerfile`)
@@ -437,10 +434,12 @@ wagateway/
 │       └── utils/               # Logger, notifier
 ├── docker/                      # Nginx config, Dockerfiles, supervisord, entrypoint
 ├── Dockerfile                   # Single all-in-one container (EasyPanel / default)
+├── Dockerfile.app               # Same all-in-one image (PaaS auto-detect)
 ├── Dockerfile.single            # Alias of Dockerfile (same image)
-├── docker-compose.easypanel.yml # EasyPanel compose (app + postgres + redis)
-├── docker-compose.single.yml    # Compose for the single-container deploy
-├── docker-compose.yml
+├── docker-compose.yml           # Default compose: all-in-one app + postgres + redis
+├── docker-compose.easypanel.yml # Same as docker-compose.yml
+├── docker-compose.single.yml    # Same single-container compose
+├── docker-compose.vps.yml       # Multi-container VPS deploy (used by deploy.sh)
 └── .env.example
 ```
 

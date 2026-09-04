@@ -135,6 +135,12 @@ RUN mkdir -p wa-service/sessions wa-service/src/logs
 # Runtime layout & permissions
 # ─────────────────────────────────────────────────────────────────────────
 RUN composer dump-autoload --optimize --no-dev --no-scripts \
+ && mkdir -p storage/logs storage/app/public \
+        storage/framework/cache/data \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/framework/testing \
+        bootstrap/cache \
  && chown -R wagateway:wagateway /var/www/html \
  && chmod -R 775 storage bootstrap/cache \
  && mkdir -p /var/log/nginx /run/nginx \

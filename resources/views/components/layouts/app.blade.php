@@ -14,7 +14,7 @@
             $reverbOpts = $reverbApps['options'] ?? [];
         @endphp
         window.WaGatewayConfig = {
-            reverb_app_key: @json($reverbApps['app_key'] ?? null),
+            reverb_app_key: @json($reverbApps['key'] ?? $reverbApps['app_key'] ?? null),
             reverb_host:    @json($reverbOpts['host'] ?? null),
             reverb_port:    @json((int) ($reverbOpts['port'] ?? 80)),
             reverb_scheme:  @json($reverbOpts['scheme'] ?? 'http'),

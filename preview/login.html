@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تسجيل الدخول — WaGateway</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0B1512;
+            --paper: #F1F3EE;
+            --card: #FFFFFF;
+            --line: #DDE3DC;
+            --signal: #2FA66B;
+            --signal-deep: #1B7A4D;
+            --text: #16211C;
+            --muted: #5B6660;
+            --f-display: 'Cairo', 'IBM Plex Sans Arabic', sans-serif;
+            --f-body: 'IBM Plex Sans Arabic', 'Cairo', sans-serif;
+            --f-mono: 'IBM Plex Mono', ui-monospace, monospace;
+            --radius: 14px;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; }
+        body { font-family: var(--f-body); background: var(--paper); color: var(--text); line-height: 1.6; }
+        a { color: inherit; text-decoration: none; }
+        a:focus-visible, button:focus-visible, input:focus-visible { outline: 2.5px solid var(--signal); outline-offset: 3px; }
+        .auth-shell { min-height: 100dvh; display: grid; grid-template-columns: 1fr minmax(280px, 46%); }
+        .auth-brand { background: var(--ink); color: #E9EEE9; padding: 48px 44px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+        .auth-brand::after { content: ""; position: absolute; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgba(47,166,107,0.22), transparent 68%); inset-inline-end: -140px; bottom: -160px; pointer-events: none; }
+        .brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 800; font-size: 20px; color: #fff; position: relative; z-index: 1; width: fit-content; }
+        .brand .mark { width: 32px; height: 32px; }
+        .brand-copy { position: relative; z-index: 1; margin-top: 48px; }
+        .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 12.5px; color: #9FE8C1; background: rgba(47,166,107,0.12); border: 1px solid rgba(47,166,107,0.35); padding: 6px 14px; border-radius: 100px; margin-bottom: 18px; }
+        .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); }
+        .brand-copy h2 { font-family: var(--f-display); font-weight: 800; font-size: clamp(26px, 3vw, 36px); color: #fff; margin: 0 0 14px; line-height: 1.25; }
+        .brand-copy h2 .accent { color: var(--signal); }
+        .benefits { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+        .benefits li { display: flex; align-items: center; gap: 10px; font-size: 14.5px; color: #D7ECDF; }
+        .benefits svg { width: 18px; height: 18px; color: var(--signal); }
+        .auth-form-col { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
+        .auth-mobile-brand { display: none; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 800; font-size: 20px; margin-bottom: 20px; }
+        .auth-mobile-brand .mark { width: 32px; height: 32px; }
+        .auth-card { width: 100%; max-width: 420px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 32px 28px; box-shadow: 0 8px 30px -18px rgba(11,21,18,0.35); }
+        .auth-card h1 { font-family: var(--f-display); font-size: 22px; font-weight: 800; margin: 0 0 6px; }
+        .auth-lead { margin: 0 0 24px; color: var(--muted); font-size: 14.5px; }
+        .field { margin-bottom: 16px; }
+        .field label { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+        .field input { width: 100%; min-height: 48px; border: 1.5px solid var(--line); border-radius: 11px; padding: 12px 14px; font: 400 16px/1.5 var(--f-body); }
+        .field input:focus { border-color: var(--signal); box-shadow: 0 0 0 3px rgba(47,166,107,0.18); outline: none; }
+        .password-wrap { position: relative; }
+        .password-wrap input { padding-inline-end: 48px; }
+        .toggle-pass { position: absolute; inset-inline-end: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+        .toggle-pass svg { width: 20px; height: 20px; }
+        .btn-submit { width: 100%; min-height: 48px; border: 0; border-radius: 11px; background: var(--signal); color: #06170F; font-weight: 700; font-size: 15.5px; cursor: pointer; }
+        .btn-submit:hover { background: #37B879; }
+        .auth-foot { text-align: center; margin-top: 18px; color: var(--muted); font-size: 14px; }
+        .link { color: var(--signal-deep); font-weight: 600; }
+        .remember { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); min-height: 44px; cursor: pointer; }
+        @media (max-width: 767px) {
+            .auth-shell { grid-template-columns: 1fr; }
+            .auth-brand { display: none; }
+            .auth-mobile-brand { display: flex; }
+            .auth-card { box-shadow: none; border: 0; background: transparent; padding: 8px 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="auth-shell">
+    <main class="auth-form-col">
+        <a class="auth-mobile-brand" href="/login.html">
+            <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <rect x="1" y="1" width="30" height="30" rx="9" fill="#0F221A" stroke="#2FA66B" stroke-width="1.4"/>
+                <circle cx="11" cy="16" r="3.2" fill="#2FA66B"/>
+                <circle cx="21" cy="9.5" r="2.4" fill="#E2A63D"/>
+                <circle cx="21" cy="22.5" r="2.4" fill="#E9EEE9"/>
+                <path d="M13.6 14.6L18.6 10.6M13.6 17.4L18.6 21.4" stroke="#4C6459" stroke-width="1.3"/>
+            </svg>
+            WaGateway
+        </a>
+        <div class="auth-card">
+            <h1>تسجيل الدخول</h1>
+            <p class="auth-lead">أدخل بريدك وكلمة المرور للمتابعة.</p>
+            <form>
+                <div class="field">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input id="email" type="email" required autofocus autocomplete="username" />
+                </div>
+                <div class="field">
+                    <label for="password">كلمة المرور</label>
+                    <div class="password-wrap">
+                        <input id="password" type="password" required autocomplete="current-password" />
+                        <button type="button" class="toggle-pass" data-toggle-password="password" aria-label="إظهار كلمة المرور">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <label class="remember"><input type="checkbox" /> تذكرني</label>
+                <button type="submit" class="btn-submit">دخول</button>
+            </form>
+            <p class="auth-foot">ليس لديك حساب؟ <a class="link" href="/register.html">أنشئ حساباً</a></p>
+        </div>
+    </main>
+    <aside class="auth-brand">
+        <a class="brand" href="/register.html">
+            <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <rect x="1" y="1" width="30" height="30" rx="9" fill="#0F221A" stroke="#2FA66B" stroke-width="1.4"/>
+                <circle cx="11" cy="16" r="3.2" fill="#2FA66B"/>
+                <circle cx="21" cy="9.5" r="2.4" fill="#E2A63D"/>
+                <circle cx="21" cy="22.5" r="2.4" fill="#E9EEE9"/>
+                <path d="M13.6 14.6L18.6 10.6M13.6 17.4L18.6 21.4" stroke="#4C6459" stroke-width="1.3"/>
+            </svg>
+            WaGateway
+        </a>
+        <div class="brand-copy">
+            <span class="eyebrow"><span class="dot"></span>بدون Meta · بدون انتظار الموافقة</span>
+            <h2>رقم واتساب واحد، <span class="accent">بوابة API</span> كاملة.</h2>
+            <ul class="benefits">
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 11-14h-7l1-6Z"/></svg> ربط فوري بمسح QR</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg> بدون انتظار موافقة</li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> بدون رسوم لكل رسالة</li>
+            </ul>
+        </div>
+        <div></div>
+    </aside>
+</div>
+<script>
+    document.querySelectorAll('[data-toggle-password]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = document.getElementById(btn.getAttribute('data-toggle-password'));
+            if (!input) return;
+            input.type = input.type === 'password' ? 'text' : 'password';
+        });
+    });
+</script>
+</body>
+</html>

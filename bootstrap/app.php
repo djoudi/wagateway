@@ -21,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.key' => \App\Http\Middleware\ApiKeyAuthenticate::class,
             'feature' => \App\Http\Middleware\EnsurePlanFeature::class,
         ]);
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocaleFromAcceptLanguage::class,
+        ]);
         $middleware->statefulApi();
 
         // Trust proxy headers (X-Forwarded-Proto, -Host, -Port) from the

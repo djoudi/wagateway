@@ -150,9 +150,11 @@ RUN mkdir -p /etc/nginx/conf.d /var/log/nginx /run \
  && nginx -t
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh \
- && mkdir -p /var/log/supervisor \
- && chown -R wagateway:wagateway /var/log/supervisor /var/log/nginx /run/nginx /var/log/php \
+COPY docker/run-artisan.sh /usr/local/bin/run-artisan
+COPY docker/run-wa-service.sh /usr/local/bin/run-wa-service
+RUN chmod +x /entrypoint.sh /usr/local/bin/run-artisan /usr/local/bin/run-wa-service /var/www/html/artisan \
+ && mkdir -p /var/log/supervisor /home/wagateway \
+ && chown -R wagateway:wagateway /var/log/supervisor /var/log/nginx /run/nginx /var/log/php /home/wagateway \
  && chmod 777 /var/log/supervisor
 
 EXPOSE 80

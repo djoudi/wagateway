@@ -13,6 +13,7 @@ export default defineConfig({
     ],
     server: {
         host: '0.0.0.0',
+        allowedHosts: ['.monkeycode-ai.live'],
         hmr: {
             host: process.env.VITE_HMR_HOST ?? 'localhost',
         },

@@ -3,6 +3,10 @@
     <h1>{{ $isAr ? 'ابدأ مجاناً' : 'Get started for free' }}</h1>
     <p class="auth-lead">{{ $isAr ? 'أنشئ حسابك خلال دقيقة وابدأ ربط رقم واتساب.' : 'Create your account in a minute and connect a WhatsApp number.' }}</p>
 
+    @if ($errors->any())
+        <div class="status status-error">{{ $errors->first() }}</div>
+    @endif
+
     @if (request()->query('plan') === 'pro' || request()->query('plan') === 'business')
         <div class="banner">
             @if ($isAr)

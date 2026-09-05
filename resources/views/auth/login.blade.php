@@ -7,6 +7,10 @@
         <div class="status">{{ session('status') }}</div>
     @endif
 
+    @if ($errors->any())
+        <div class="status status-error">{{ $errors->first() }}</div>
+    @endif
+
     <form method="POST" action="{{ route('login') }}" data-loading>
         @csrf
 

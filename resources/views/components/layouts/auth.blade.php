@@ -278,6 +278,11 @@
             font-size: 14px;
             margin-bottom: 16px;
         }
+        .status-error {
+            background: var(--danger-dim);
+            border-color: #F3C4C0;
+            color: var(--danger);
+        }
 
         @media (max-width: 767px) {
             .auth-shell { grid-template-columns: 1fr; }

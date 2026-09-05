@@ -15,7 +15,6 @@ export LARAVEL_SECRET="${LARAVEL_SECRET:-${WA_SERVICE_SECRET:-}}"
 export PORT="${PORT:-3000}"
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="${PUPPETEER_SKIP_CHROMIUM_DOWNLOAD:-true}"
 export LARAVEL_WEBHOOK_URL="${LARAVEL_WEBHOOK_URL:-http://127.0.0.1/internal/wa-events}"
-export SESSION_PATH="${SESSION_PATH:-/var/www/html/wa-service/sessions}"
 
 if [ -z "${PUPPETEER_EXECUTABLE_PATH:-}" ]; then
     for candidate in /usr/bin/chromium /usr/bin/chromium-browser /usr/lib/chromium/chromium; do

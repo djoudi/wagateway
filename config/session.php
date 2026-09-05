@@ -10,7 +10,7 @@ return [
     'store'           => env('SESSION_STORE'),
     'lottery'         => [2, 100],
     'cookie'          => env('SESSION_COOKIE', 'wagateway_session'),
-    'path'            => env('SESSION_PATH', '/'),
+    'path'            => env('SESSION_COOKIE_PATH', '/'),
     'domain'          => env('SESSION_DOMAIN'),
     'secure'          => env('SESSION_SECURE_COOKIE', true),
     'http_only'       => env('SESSION_HTTP_ONLY', true),

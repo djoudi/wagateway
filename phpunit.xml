@@ -21,6 +21,7 @@
         <env name="MAIL_MAILER"      value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER"   value="array"/>
+        <env name="SESSION_PATH"     value="/var/www/html/wa-service/sessions"/>
         <env name="BROADCAST_CONNECTION" value="log"/>
         <env name="WA_SERVICE_SECRET"    value="test_secret_key_32chars_minimum"/>
         <env name="SUBSCRIPTION_GRACE_DAYS" value="0"/>

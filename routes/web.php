@@ -33,7 +33,7 @@ Route::middleware('auth')->group(function () {
 | Dashboard routes (Livewire pages)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
+Route::middleware(['auth'])->prefix('dashboard')->group(function () {
     Route::get('/',          fn () => view('dashboard'))->name('dashboard');
     Route::get('/devices',   fn () => view('devices'))->name('devices');
     Route::get('/messages',  fn () => view('messages'))->name('messages');
@@ -51,7 +51,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
 | Billing — Chargily Pay checkout flow
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified'])->prefix('billing')->group(function () {
+Route::middleware(['auth'])->prefix('billing')->group(function () {
     Route::get('/checkout/{plan}', [\App\Http\Controllers\BillingController::class, 'checkout'])
         ->name('billing.checkout');
     Route::get('/checkout/{invoice}/success', [\App\Http\Controllers\BillingController::class, 'checkoutSuccess'])

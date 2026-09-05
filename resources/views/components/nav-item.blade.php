@@ -6,11 +6,11 @@
 @endphp
 
 <a href="{{ $href }}"
-   class="flex items-center gap-2.5 px-3 py-2 mx-1 rounded-lg text-[13px] font-medium transition-colors
+   class="flex items-center gap-2.5 px-3 py-2.5 mx-1 rounded-lg text-[13px] font-medium transition-colors min-h-11
           {{ $active
-             ? 'bg-green-50 text-green-700 border-r-2 border-[#25D366]'
-             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}"
+             ? 'bg-ink-soft text-paper-on-dark border-inline-start-2 border-signal'
+             : 'text-muted-dark hover:bg-ink-soft hover:text-paper-on-dark' }}"
 >
-    <i class="ti {{ $icon }} text-base w-4 text-center {{ $active ? 'text-[#25D366]' : '' }}"></i>
+    <i class="ti {{ $icon }} text-base w-4 text-center {{ $active ? 'text-signal' : '' }}"></i>
     {{ $slot }}
 </a>

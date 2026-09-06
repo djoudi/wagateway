@@ -42,6 +42,17 @@ test('dashboard shell has a mobile drawer hamburger', function () {
         ->toContain('aria-expanded');
 });
 
+test('closed sidebar is not a click overlay', function () {
+    $html = $this->actingAs(dashboardUser())
+        ->get('/dashboard')
+        ->assertOk()
+        ->getContent();
+
+    expect($html)
+        ->toContain('id="app-sidebar"')
+        ->toContain("sidebarOpen ? 'is-open' : ''");
+});
+
 test('dashboard shell does not use old brand tokens or dead chrome', function () {
     $html = $this->actingAs(dashboardUser())
         ->get('/dashboard')

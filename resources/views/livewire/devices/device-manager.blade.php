@@ -14,7 +14,7 @@
                 @endif
             </p>
         </div>
-        <button wire:click="openAddModal"
+        <button type="button" wire:click="openAddModal"
                 class="flex items-center justify-center gap-2 px-3 py-2 bg-signal text-[#06170F] text-sm font-medium rounded-lg hover:bg-[#37B879] transition-colors min-h-11">
             <i class="ti ti-plus text-base"></i> {{ $isAr ? 'إضافة جهاز' : 'Add device' }}
         </button>
@@ -96,7 +96,7 @@
                 <i class="ti ti-device-mobile-off text-3xl text-muted block mb-2"></i>
                 <p class="text-sm font-medium text-text">{{ $isAr ? 'لا توجد أجهزة بعد' : 'No devices yet' }}</p>
                 <p class="text-xs text-muted mt-1 mb-4">{{ $isAr ? 'أضف جهاز واتساب الأول لبدء إرسال الرسائل' : 'Add your first WhatsApp device to start sending messages' }}</p>
-                <button wire:click="openAddModal"
+                <button type="button" wire:click="openAddModal"
                         class="px-4 py-2 bg-signal text-[#06170F] text-sm font-medium rounded-lg hover:bg-[#37B879] transition-colors min-h-11">
                     <i class="ti ti-plus me-1"></i> {{ $isAr ? 'أضف الجهاز الأول' : 'Add first device' }}
                 </button>

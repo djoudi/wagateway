@@ -84,8 +84,8 @@
 
     <aside
         id="app-sidebar"
-        class="fixed inset-y-0 start-0 z-40 flex h-screen w-[240px] flex-col bg-ink text-paper-on-dark transition-transform duration-200 md:static md:z-auto md:flex-shrink-0 md:!translate-x-0"
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'"
+        class="fixed inset-y-0 start-0 z-40 flex h-screen w-[240px] flex-col bg-ink text-paper-on-dark transition-transform duration-200 md:static md:z-auto md:flex-shrink-0 md:translate-x-0 md:pointer-events-auto"
+        :class="sidebarOpen ? 'is-open' : ''"
     >
         <div class="px-4 py-4 border-b border-ink-line">
             <div class="flex items-center gap-2.5">
@@ -147,7 +147,7 @@
         <header class="h-13 bg-card border-b border-line flex items-center gap-3 px-5 flex-shrink-0">
             <button
                 type="button"
-                class="md:hidden min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-line text-text hover:bg-paper transition-colors"
+                class="md:hidden relative z-50 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-line text-text hover:bg-paper transition-colors"
                 aria-controls="app-sidebar"
                 :aria-expanded="sidebarOpen.toString()"
                 @click="sidebarOpen = !sidebarOpen"

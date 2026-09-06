@@ -25,6 +25,20 @@
     --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
+@media (max-width: 767.98px) {
+    #app-sidebar {
+        pointer-events: none;
+        transform: translateX(-100%);
+    }
+    html[dir="rtl"] #app-sidebar {
+        transform: translateX(100%);
+    }
+    #app-sidebar.is-open {
+        pointer-events: auto;
+        transform: translateX(0);
+    }
+}
+
 .wa-bubble {
     background: #E7F3EC;
     border-radius: 1rem 1rem 1rem 0;

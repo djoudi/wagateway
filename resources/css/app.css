@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+@source '../views/**/*.blade.php';
+@source '../../app/Livewire/**/*.php';
+
 @theme {
     --color-ink: #0B1512;
     --color-ink-soft: #132019;

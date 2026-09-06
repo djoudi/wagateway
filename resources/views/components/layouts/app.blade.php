@@ -62,7 +62,7 @@
     x-show="show"
     x-cloak
     x-transition
-    class="fixed top-4 inset-inline-end-4 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium border"
+    class="fixed top-4 end-4 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium border"
     :class="type === 'success' ? 'bg-signal-dim text-signal-deep border-signal' : 'bg-danger-dim text-danger border-danger'"
 >
     <i class="ti" :class="type === 'success' ? 'ti-circle-check' : 'ti-alert-circle'"></i>

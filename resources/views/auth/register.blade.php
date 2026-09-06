@@ -19,7 +19,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('register') }}" data-loading>
+    <form method="POST" action="{{ route('register', absolute: false) }}" data-loading>
         @csrf
         @if (request()->query('plan'))
             <input type="hidden" name="plan" value="{{ request()->query('plan') }}" />

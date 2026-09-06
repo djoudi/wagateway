@@ -11,7 +11,7 @@
         <div class="status status-error">{{ $errors->first() }}</div>
     @endif
 
-    <form method="POST" action="{{ route('login') }}" data-loading>
+    <form method="POST" action="{{ route('login.store', absolute: false) }}" data-loading>
         @csrf
 
         <div class="field">

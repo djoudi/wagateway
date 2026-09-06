@@ -62,6 +62,26 @@ test('register shows validation errors instead of a silent refresh', function ()
         ->assertSessionHasErrors(['name', 'email', 'password']);
 });
 
+test('login form posts to a same-origin relative path', function () {
+    $html = $this->get('/login')->assertOk()->getContent();
+
+    expect($html)
+        ->toContain('method="POST"')
+        ->toContain('action="/login"')
+        ->not->toContain('action="http://')
+        ->not->toContain('action="https://');
+});
+
+test('register form posts to a same-origin relative path', function () {
+    $html = $this->get('/register')->assertOk()->getContent();
+
+    expect($html)
+        ->toContain('method="POST"')
+        ->toContain('action="/register"')
+        ->not->toContain('action="http://')
+        ->not->toContain('action="https://');
+});
+
 test('login shows errors instead of a silent refresh', function () {
     $this->from('/login')
         ->post('/login', [

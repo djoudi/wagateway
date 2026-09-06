@@ -139,7 +139,7 @@
                     <i class="ti ti-logout text-sm"></i>
                 </a>
             </div>
-            <form id="logout-form" method="POST" action="{{ route('logout') }}" class="hidden">@csrf</form>
+            <form id="logout-form" method="POST" action="{{ route('logout', absolute: false) }}" class="hidden">@csrf</form>
         </div>
     </aside>
 

@@ -17,9 +17,14 @@ class WaHealthCheck extends Command
 
         if ($ok) {
             $this->info('WA service: healthy');
-        } else {
-            Log::error('[WA HealthCheck] WA service is unreachable!');
-            $this->error('WA service: UNREACHABLE — check wa-service container');
+            return self::SUCCESS;
         }
+
+        Log::error('[WA HealthCheck] WA service is unreachable!', [
+            'url' => rtrim((string) config('services.wa_node.url'), '/') . '/health',
+        ]);
+        $this->error('WA service: UNREACHABLE — check wa-service process and WA_SERVICE_URL');
+
+        return self::FAILURE;
     }
 }

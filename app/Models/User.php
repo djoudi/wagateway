@@ -122,7 +122,13 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 
     public function isAdmin(): bool
     {
-        return in_array($this->email, config('wagateway.admin_emails', []));
+        $email = strtolower(trim((string) $this->email));
+        $admins = array_map(
+            static fn ($value) => strtolower(trim((string) $value)),
+            config('wagateway.admin_emails', []),
+        );
+
+        return $email !== '' && in_array($email, $admins, true);
     }
 
     public function canAccessPanel(Panel $panel): bool

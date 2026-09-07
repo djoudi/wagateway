@@ -16,7 +16,10 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 app.use(express.json({ limit: '10mb' }));
 
-// Verify internal shared secret on every request
+// Liveness must be public — Laravel ping and process supervisors do not
+// always send X-WG-Secret. Everything else stays behind the shared secret.
+app.use('/health', healthRoutes);
+
 app.use((req, res, next) => {
   const secret = req.headers['x-wg-secret'];
   if (secret !== process.env.LARAVEL_SECRET) {
@@ -29,7 +32,6 @@ app.use((req, res, next) => {
 app.use(rateLimit({ windowMs: 60_000, max: 500, standardHeaders: true }));
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
-app.use('/health',  healthRoutes);
 app.use('/session', sessionRoutes);
 app.use('/send',    sendRoutes);
 

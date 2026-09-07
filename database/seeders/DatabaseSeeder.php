@@ -14,21 +14,28 @@ class DatabaseSeeder extends Seeder
 
         if (app()->environment(['local', 'staging'])) {
             $plan = Plan::where('slug', 'pro')->first();
+            $adminEmail = config('wagateway.admin_emails')[0] ?? 'admin@wagateway.dz';
 
-            $admin = User::factory()->create([
-                'name'         => 'Admin',
-                'email'        => 'admin@wagateway.dz',
-                'password'     => bcrypt('Admin@123456'),
-                'plan_id'      => $plan?->id,
-            ]);
+            $admin = User::query()->firstOrCreate(
+                ['email' => $adminEmail],
+                [
+                    'name'     => 'Admin',
+                    'password' => bcrypt('Admin@123456'),
+                    'plan_id'  => $plan?->id,
+                ],
+            );
 
-            $keys = $admin->generateApiKeys();
-
-            $this->command->warn('─────────────────────────────────────────');
-            $this->command->warn(' Dev admin created — SAVE THESE KEYS NOW:');
-            $this->command->warn(" Live: {$keys['live']}");
-            $this->command->warn(" Test: {$keys['test']}");
-            $this->command->warn('─────────────────────────────────────────');
+            if (! $admin->api_key_hash) {
+                $keys = $admin->generateApiKeys();
+                $this->command->warn('─────────────────────────────────────────');
+                $this->command->warn(' Dev admin created — SAVE THESE KEYS NOW:');
+                $this->command->warn(" Email: {$admin->email}");
+                $this->command->warn(' Password: Admin@123456');
+                $this->command->warn(" Live: {$keys['live']}");
+                $this->command->warn(" Test: {$keys['test']}");
+                $this->command->warn(' Set ADMIN_EMAILS to this address to open /admin.');
+                $this->command->warn('─────────────────────────────────────────');
+            }
         }
     }
 }

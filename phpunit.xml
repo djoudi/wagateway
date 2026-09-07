@@ -24,6 +24,7 @@
         <env name="SESSION_PATH"     value="/var/www/html/wa-service/sessions"/>
         <env name="BROADCAST_CONNECTION" value="log"/>
         <env name="WA_SERVICE_SECRET"    value="test_secret_key_32chars_minimum"/>
+        <env name="ADMIN_EMAILS"         value="admin@example.com"/>
         <env name="SUBSCRIPTION_GRACE_DAYS" value="0"/>
         <env name="REDIS_CLIENT"     value="phpredis"/>
         <env name="REDIS_HOST"       value="127.0.0.1"/>

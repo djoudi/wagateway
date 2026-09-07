@@ -95,9 +95,24 @@ class WhatsAppService
     public function ping(): bool
     {
         try {
-            $res = Http::timeout(3)->get("{$this->baseUrl}/health");
+            $res = Http::withHeaders($this->headers())
+                ->timeout(3)
+                ->get("{$this->baseUrl}/health");
+
+            if (! $res->ok()) {
+                Log::warning('[WA HealthCheck] unexpected status', [
+                    'url'    => "{$this->baseUrl}/health",
+                    'status' => $res->status(),
+                ]);
+            }
+
             return $res->ok();
-        } catch (ConnectionException) {
+        } catch (ConnectionException $e) {
+            Log::warning('[WA HealthCheck] connection failed', [
+                'url'   => "{$this->baseUrl}/health",
+                'error' => $e->getMessage(),
+            ]);
+
             return false;
         }
     }

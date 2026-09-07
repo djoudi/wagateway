@@ -51,7 +51,7 @@ class LoginController extends Controller
             // Keys are shown on the API Keys page — user is directed there
         }
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     public function destroy(Request $request)
@@ -59,6 +59,6 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('login');
+        return redirect()->to(route('login', absolute: false));
     }
 }

@@ -41,9 +41,9 @@ class RegisterController extends Controller
         $intendedPlan = $request->query('plan') ?? $request->input('plan');
         if (in_array($intendedPlan, ['pro', 'business'], true)) {
             session(['intended_plan' => $intendedPlan]);
-            return redirect()->route('billing');
+            return redirect()->to(route('billing', absolute: false));
         }
 
-        return redirect()->route('dashboard');
+        return redirect()->to(route('dashboard', absolute: false));
     }
 }

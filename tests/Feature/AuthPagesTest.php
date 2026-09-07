@@ -49,6 +49,16 @@ test('session cookie path is url root even when SESSION_PATH is a filesystem dir
     expect(config('session.path'))->toBe('/');
 });
 
+test('single-container nginx sets HTTPS after including fastcgi_params', function () {
+    $conf = file_get_contents(base_path('docker/nginx.single.conf'));
+    $includePos = strpos($conf, 'include        fastcgi_params;');
+    $httpsPos = strpos($conf, 'fastcgi_param  HTTPS on;');
+
+    expect($includePos)->not->toBeFalse()
+        ->and($httpsPos)->not->toBeFalse()
+        ->and($includePos)->toBeLessThan($httpsPos);
+});
+
 test('register shows validation errors instead of a silent refresh', function () {
     $this->from('/register')
         ->withHeaders(['Accept-Language' => 'en'])

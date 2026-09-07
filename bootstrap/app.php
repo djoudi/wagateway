@@ -34,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // though the public-facing connection is, and secure cookies won't
         // be sent by the browser at all.
         $middleware->trustProxies(
-            at: ['172.16.0.0/12', '10.0.0.0/8', '192.168.0.0/16'],
+            at: ['127.0.0.1', '::1', '172.16.0.0/12', '10.0.0.0/8', '192.168.0.0/16'],
             headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR
                    | \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST
                    | \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT

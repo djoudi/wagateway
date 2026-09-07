@@ -54,6 +54,7 @@ services:
       QUEUE_CONNECTION: redis
       CACHE_STORE: redis
       SESSION_DRIVER: redis
+      SESSION_COOKIE_PATH: /
       BROADCAST_CONNECTION: reverb
 
       REVERB_HOST: 0.0.0.0

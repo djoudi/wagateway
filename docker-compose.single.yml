@@ -47,6 +47,7 @@ services:
       QUEUE_CONNECTION: redis
       CACHE_STORE: redis
       SESSION_DRIVER: redis
+      SESSION_COOKIE_PATH: /
       BROADCAST_CONNECTION: reverb
 
       # Reverb (internal) + browser-facing

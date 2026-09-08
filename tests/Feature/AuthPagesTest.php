@@ -59,6 +59,24 @@ test('single-container nginx sets HTTPS after including fastcgi_params', functio
         ->and($includePos)->toBeLessThan($httpsPos);
 });
 
+test('nginx routes livewire javascript through php instead of the static js cache', function (string $file) {
+    $conf = file_get_contents(base_path($file));
+    $livewirePos = strpos($conf, 'location ^~ /livewire/');
+    $tryFilesPos = strpos($conf, 'try_files $uri $uri/ /index.php?$query_string;', $livewirePos !== false ? $livewirePos : 0);
+    $staticJsPos = strpos($conf, 'location ~* \.(css|js|');
+
+    expect($livewirePos)->not->toBeFalse()
+        ->and($staticJsPos)->not->toBeFalse()
+        ->and($tryFilesPos)->not->toBeFalse()
+        ->and($tryFilesPos)->toBeGreaterThan($livewirePos)
+        ->and($tryFilesPos)->toBeLessThan($staticJsPos);
+})->with([
+    'docker/nginx.single.conf',
+    'docker/nginx.easypanel.conf',
+    'docker/nginx.coolify.conf',
+    'docker/nginx.conf',
+]);
+
 test('register shows validation errors instead of a silent refresh', function () {
     $this->from('/register')
         ->withHeaders(['Accept-Language' => 'en'])

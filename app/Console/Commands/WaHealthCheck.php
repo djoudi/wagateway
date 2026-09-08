@@ -11,7 +11,7 @@ class WaHealthCheck extends Command
     protected $signature   = 'wa:health-check';
     protected $description = 'Ping the WA Node service and log health status';
 
-    public function handle(WhatsAppService $wa): void
+    public function handle(WhatsAppService $wa): int
     {
         $ok = $wa->ping();
 

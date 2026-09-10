@@ -35,3 +35,40 @@ test('non-admin cannot open filament admin', function () {
 
     expect($response->isOk())->toBeFalse();
 });
+
+test('admin login form posts relatively with a hidden password field', function () {
+    $html = $this->get('/admin/login')->assertOk()->getContent();
+
+    expect($html)
+        ->toContain('method="POST"')
+        ->toContain('action="/admin/login"')
+        ->toContain('type="password"')
+        ->not->toContain('wire:submit')
+        ->not->toContain('x-bind:type');
+});
+
+test('admin can sign in via post', function () {
+    config(['wagateway.admin_emails' => ['ops@example.com']]);
+    $admin = User::factory()->create(['email' => 'ops@example.com']);
+
+    $this->post('/admin/login', [
+        'email' => $admin->email,
+        'password' => 'password',
+    ])->assertRedirect('/admin');
+
+    $this->assertAuthenticated();
+});
+
+test('non-admin cannot sign in via admin login', function () {
+    $user = User::factory()->create(['email' => 'member@example.com']);
+
+    $this->from('/admin/login')
+        ->post('/admin/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])
+        ->assertRedirect('/admin/login')
+        ->assertSessionHasErrors('email');
+
+    $this->assertGuest();
+});

@@ -11,6 +11,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/login',    fn () => view('auth.login'))->name('login');
     Route::post('/login',   [\App\Http\Controllers\Auth\LoginController::class, 'store'])
         ->middleware('throttle:auth')->name('login.store');
+    Route::post('/admin/login', [\App\Http\Controllers\Auth\AdminLoginController::class, 'store'])
+        ->middleware('throttle:auth')->name('admin.login.store');
 
     Route::get('/register', fn () => view('auth.register'))->name('register');
     Route::post('/register',[\App\Http\Controllers\Auth\RegisterController::class, 'store'])

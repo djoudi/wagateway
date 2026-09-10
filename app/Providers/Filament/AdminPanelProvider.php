@@ -8,7 +8,7 @@ use App\Filament\Resources\PlanResource;
 use App\Filament\Resources\SecurityEventResource;
 use App\Filament\Resources\UserResource;
 use App\Filament\Widgets\PlatformStatsWidget;
-use App\Models\User;
+use App\Http\Controllers\Auth\AdminLoginController;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login([AdminLoginController::class, 'create'])
             ->colors(['primary' => Color::Green])
             ->brandName('WaGateway Admin')
             ->resources([

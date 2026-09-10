@@ -71,7 +71,8 @@ test('nginx routes livewire javascript through php instead of the static js cach
         ->and($staticJsPos)->not->toBeFalse()
         ->and($tryFilesPos)->not->toBeFalse()
         ->and($tryFilesPos)->toBeGreaterThan($livewirePos)
-        ->and($tryFilesPos)->toBeLessThan($staticJsPos);
+        ->and($tryFilesPos)->toBeLessThan($staticJsPos)
+        ->and(str_contains(substr($conf, $staticJsPos), 'try_files $uri /index.php?$query_string;'))->toBeTrue();
 })->with([
     'docker/nginx.single.conf',
     'docker/nginx.easypanel.conf',

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\InvoiceResource\Pages;
 use App\Models\Invoice;
 use App\Models\SecurityEvent;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -78,7 +79,7 @@ class InvoiceResource extends Resource
                 // for CCP/bank_transfer invoices. Card payments are never
                 // confirmed here; they only ever activate via the signed
                 // Chargily webhook (see ChargilyWebhookController).
-                Filament\Actions\Action::make('confirm_payment')
+                Action::make('confirm_payment')
                     ->label('Confirm payment')
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
@@ -112,7 +113,7 @@ class InvoiceResource extends Resource
                             ->send();
                     }),
 
-                Filament\Actions\Action::make('mark_failed')
+                Action::make('mark_failed')
                     ->label('Mark failed')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')

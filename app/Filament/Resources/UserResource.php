@@ -5,6 +5,10 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\Plan;
 use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -75,22 +79,22 @@ class UserResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_suspended')->label('Suspended'),
             ])
             ->actions([
-                Filament\Actions\Action::make('generate_keys')
+                Action::make('generate_keys')
                     ->label('Regen API Keys')
                     ->icon('heroicon-o-key')
                     ->action(fn (User $record) => $record->generateApiKeys())
                     ->requiresConfirmation(),
-                Filament\Actions\Action::make('suspend')
+                Action::make('suspend')
                     ->label(fn (User $r) => $r->is_suspended ? 'Unsuspend' : 'Suspend')
                     ->icon('heroicon-o-no-symbol')
                     ->color('danger')
                     ->action(fn (User $r) => $r->update(['is_suspended' => ! $r->is_suspended]))
                     ->requiresConfirmation(),
-                Filament\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Filament\Actions\BulkActionGroup::make([
-                    Filament\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MessageResource\Pages;
 use App\Models\Message;
+use Filament\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -58,7 +59,7 @@ class MessageResource extends Resource
                     ->label('Today only'),
             ])
             ->actions([
-                Filament\Actions\Action::make('view_content')
+                Action::make('view_content')
                     ->label('Content')
                     ->icon('heroicon-o-eye')
                     ->modalContent(fn (Message $r) => view('filament.message-content', ['message' => $r]))

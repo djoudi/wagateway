@@ -1,4 +1,4 @@
-<div>
+<div x-data="{ addModal: @entangle('showAddModal') }">
 @php $isAr = app()->getLocale() === 'ar'; @endphp
 
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
@@ -14,10 +14,10 @@
                 @endif
             </p>
         </div>
-        <button type="button" wire:click="openAddModal"
-                class="flex items-center justify-center gap-2 px-3 py-2 bg-signal text-[#06170F] text-sm font-medium rounded-lg hover:bg-[#37B879] transition-colors min-h-11">
+        <a href="{{ route('devices', ['add' => 1]) }}" wire:click.prevent="openAddModal" @click="addModal = true"
+           class="flex items-center justify-center gap-2 px-3 py-2 bg-signal text-[#06170F] text-sm font-medium rounded-lg hover:bg-[#37B879] transition-colors min-h-11">
             <i class="ti ti-plus text-base"></i> {{ $isAr ? 'إضافة جهاز' : 'Add device' }}
-        </button>
+        </a>
     </div>
 
     @error('plan')
@@ -73,18 +73,18 @@
 
                 <div class="flex gap-2">
                     @if ($device->status->value === 'connected')
-                        <button wire:click="disconnectDevice('{{ $device->uuid }}')"
+                        <button type="button" wire:click="disconnectDevice('{{ $device->uuid }}')"
                                 wire:confirm="{{ $isAr ? 'قطع اتصال هذا الجهاز؟' : 'Disconnect this device?' }}"
                                 class="flex-1 flex items-center justify-center gap-1.5 py-1.5 min-h-11 border border-line rounded-lg text-xs font-medium text-muted hover:bg-paper transition-colors">
                             <i class="ti ti-unlink text-sm"></i> {{ $isAr ? 'قطع الاتصال' : 'Disconnect' }}
                         </button>
                     @else
-                        <button wire:click="reconnectDevice('{{ $device->uuid }}')"
+                        <button type="button" wire:click="reconnectDevice('{{ $device->uuid }}')"
                                 class="flex-1 flex items-center justify-center gap-1.5 py-1.5 min-h-11 bg-signal rounded-lg text-xs font-medium text-[#06170F] hover:bg-[#37B879] transition-colors">
                             <i class="ti ti-qrcode text-sm"></i> {{ $isAr ? 'إعادة الربط' : 'Reconnect' }}
                         </button>
                     @endif
-                    <button wire:click="removeDevice('{{ $device->uuid }}')"
+                    <button type="button" wire:click="removeDevice('{{ $device->uuid }}')"
                             wire:confirm="{{ $isAr ? 'حذف هذا الجهاز نهائياً؟' : 'Permanently remove this device?' }}"
                             class="flex items-center justify-center min-w-11 min-h-11 border border-danger/20 text-danger hover:bg-danger-dim rounded-lg transition-colors">
                         <i class="ti ti-trash text-sm"></i>
@@ -96,17 +96,18 @@
                 <i class="ti ti-device-mobile-off text-3xl text-muted block mb-2"></i>
                 <p class="text-sm font-medium text-text">{{ $isAr ? 'لا توجد أجهزة بعد' : 'No devices yet' }}</p>
                 <p class="text-xs text-muted mt-1 mb-4">{{ $isAr ? 'أضف جهاز واتساب الأول لبدء إرسال الرسائل' : 'Add your first WhatsApp device to start sending messages' }}</p>
-                <button type="button" wire:click="openAddModal"
-                        class="px-4 py-2 bg-signal text-[#06170F] text-sm font-medium rounded-lg hover:bg-[#37B879] transition-colors min-h-11">
+                <a href="{{ route('devices', ['add' => 1]) }}" wire:click.prevent="openAddModal" @click="addModal = true"
+                   class="inline-flex items-center justify-center px-4 py-2 bg-signal text-[#06170F] text-sm font-medium rounded-lg hover:bg-[#37B879] transition-colors min-h-11">
                     <i class="ti ti-plus me-1"></i> {{ $isAr ? 'أضف الجهاز الأول' : 'Add first device' }}
-                </button>
+                </a>
             </div>
         @endforelse
     </div>
 
-    @if ($showAddModal)
-    <div class="fixed inset-0 bg-ink/50 flex items-center justify-center z-50 p-4" wire:click.self="$set('showAddModal',false)">
-        <div class="bg-card rounded-[14px] w-80 max-w-full p-6 shadow-xl border border-line">
+    <div x-show="addModal" @if (! $showAddModal) x-cloak @endif
+         class="fixed inset-0 bg-ink/50 flex items-center justify-center z-50 p-4"
+         @click.self="addModal = false">
+        <div class="bg-card rounded-[14px] w-80 max-w-full p-6 shadow-xl border border-line" @click.stop>
             <h3 class="text-sm font-semibold text-text mb-4">{{ $isAr ? 'إضافة جهاز جديد' : 'Add new device' }}</h3>
             <div class="mb-4">
                 <label class="block text-xs text-muted mb-1.5">{{ $isAr ? 'اسم الجهاز' : 'Device name' }}</label>
@@ -117,11 +118,11 @@
                 @enderror
             </div>
             <div class="flex gap-2">
-                <button wire:click="$set('showAddModal',false)"
+                <button type="button" @click="addModal = false" wire:click="closeAddModal"
                         class="flex-1 py-2 border border-line rounded-lg text-sm text-muted hover:bg-paper transition-colors min-h-11">
                     {{ $isAr ? 'إلغاء' : 'Cancel' }}
                 </button>
-                <button wire:click="createDevice"
+                <button type="button" wire:click="createDevice"
                         class="flex-1 py-2 bg-signal text-[#06170F] text-sm font-medium rounded-lg hover:bg-[#37B879] transition-colors min-h-11">
                     <span wire:loading.remove wire:target="createDevice">{{ $isAr ? 'متابعة' : 'Continue' }}</span>
                     <span wire:loading wire:target="createDevice">{{ $isAr ? 'جارٍ البدء…' : 'Starting…' }}</span>
@@ -129,7 +130,6 @@
             </div>
         </div>
     </div>
-    @endif
 
     @if ($showQrModal)
     <div class="fixed inset-0 bg-ink/50 flex items-center justify-center z-50 p-4">

@@ -199,7 +199,7 @@
             <div class="text-center py-6">
                 <i class="ti ti-device-mobile-off block text-2xl text-muted mb-2"></i>
                 <p class="text-xs text-muted mb-3">{{ $isAr ? 'لا توجد أجهزة' : 'No devices connected' }}</p>
-                <a href="{{ route('devices') }}"
+                <a href="{{ route('devices', ['add' => 1]) }}"
                    class="text-xs font-semibold text-signal-deep hover:underline">
                     {{ $isAr ? '+ أضف جهازك الأول' : '+ Add your first device' }}
                 </a>

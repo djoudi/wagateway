@@ -33,7 +33,7 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('email')
                     ->email()->required()->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('password')
-                    ->password()->dehydrated(fn ($v) => filled($v))
+                    ->password()->dehydrated(fn ($state) => filled($state))
                     ->required(fn (string $context) => $context === 'create'),
             ])->columns(2),
 

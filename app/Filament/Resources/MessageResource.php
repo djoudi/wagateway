@@ -9,6 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MessageResource extends Resource
 {
@@ -41,7 +42,7 @@ class MessageResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->colors([
-                        'success' => fn ($s) => in_array($s, ['sent','delivered','read']),
+                        'success' => fn ($state) => in_array($state, ['sent','delivered','read']),
                         'danger'  => 'failed',
                         'warning' => 'queued',
                     ]),
@@ -55,7 +56,7 @@ class MessageResource extends Resource
                 Tables\Filters\SelectFilter::make('type')
                     ->options(['text' => 'Text','image' => 'Image','document' => 'Document','audio' => 'Audio']),
                 Tables\Filters\Filter::make('today')
-                    ->query(fn ($query) => $query->whereDate('created_at', today()))
+                    ->query(fn (Builder $query) => $query->whereDate('created_at', today()))
                     ->label('Today only'),
             ])
             ->actions([

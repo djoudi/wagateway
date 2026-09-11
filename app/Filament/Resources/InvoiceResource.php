@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceResource extends Resource
@@ -39,7 +40,7 @@ class InvoiceResource extends Resource
                     ->label('Method')->badge()
                     ->colors([
                         'success' => 'card',
-                        'warning' => fn ($s) => in_array($s, ['ccp', 'bank_transfer']),
+                        'warning' => fn ($state) => in_array($state, ['ccp', 'bank_transfer']),
                         'gray'    => 'coupon',
                     ]),
                 Tables\Columns\TextColumn::make('status')
@@ -47,7 +48,7 @@ class InvoiceResource extends Resource
                     ->colors([
                         'success' => 'paid',
                         'warning' => 'pending',
-                        'danger'  => fn ($s) => in_array($s, ['failed', 'expired', 'cancelled']),
+                        'danger'  => fn ($state) => in_array($state, ['failed', 'expired', 'cancelled']),
                     ]),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')->dateTime('d M H:i')->sortable(),
@@ -71,7 +72,7 @@ class InvoiceResource extends Resource
                 ]),
                 Tables\Filters\Filter::make('pending_manual')
                     ->label('Pending manual review')
-                    ->query(fn ($q) => $q->where('status', 'pending')->whereIn('payment_method', ['ccp', 'bank_transfer']))
+                    ->query(fn (Builder $query) => $query->where('status', 'pending')->whereIn('payment_method', ['ccp', 'bank_transfer']))
                     ->default(),
             ])
             ->actions([

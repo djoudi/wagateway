@@ -8,6 +8,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class SecurityEventResource extends Resource
 {
@@ -27,9 +28,9 @@ class SecurityEventResource extends Resource
                 Tables\Columns\TextColumn::make('event')
                     ->badge()
                     ->colors([
-                        'danger'  => fn ($s) => str_contains($s, 'failed') || str_contains($s, 'invalid') || str_contains($s, 'suspended') || str_contains($s, 'banned'),
-                        'warning' => fn ($s) => str_contains($s, 'regenerated') || str_contains($s, 'rate_limit'),
-                        'success' => fn ($s) => str_contains($s, 'success'),
+                        'danger'  => fn ($state) => str_contains((string) $state, 'failed') || str_contains((string) $state, 'invalid') || str_contains((string) $state, 'suspended') || str_contains((string) $state, 'banned'),
+                        'warning' => fn ($state) => str_contains((string) $state, 'regenerated') || str_contains((string) $state, 'rate_limit'),
+                        'success' => fn ($state) => str_contains((string) $state, 'success'),
                     ]),
                 Tables\Columns\TextColumn::make('user.email')->label('User')->searchable()->default('—'),
                 Tables\Columns\TextColumn::make('ip_address')->label('IP')->searchable(),
@@ -47,7 +48,7 @@ class SecurityEventResource extends Resource
                     'api_key_regenerated'  => 'API key regenerated',
                 ]),
                 Tables\Filters\Filter::make('last_24h')
-                    ->query(fn ($q) => $q->where('created_at', '>=', now()->subDay()))
+                    ->query(fn (Builder $query) => $query->where('created_at', '>=', now()->subDay()))
                     ->label('Last 24 hours')
                     ->default(),
             ])

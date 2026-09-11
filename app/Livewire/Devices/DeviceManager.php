@@ -5,7 +5,9 @@ namespace App\Livewire\Devices;
 use App\Enums\DeviceStatus;
 use App\Models\Device;
 use App\Services\WhatsAppService;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Throwable;
 
 class DeviceManager extends Component
 {
@@ -127,50 +129,57 @@ class DeviceManager extends Component
         $device->delete();
     }
 
-    public function pollQrFromDevice(WhatsAppService $wa): void
+    public function pollQrFromDevice(): void
     {
         if (! $this->showQrModal || ! $this->qrDeviceId || $this->qrStatus === 'connected') {
             return;
         }
 
-        $device = Device::where('uuid', $this->qrDeviceId)
-            ->where('user_id', auth()->id())
-            ->first();
+        try {
+            $device = Device::where('uuid', $this->qrDeviceId)
+                ->where('user_id', auth()->id())
+                ->first();
 
-        if (! $device) {
-            return;
-        }
+            if (! $device) {
+                return;
+            }
 
-        if ($device->status === DeviceStatus::Connected) {
-            $this->qrStatus = 'connected';
-            $this->qrCode = null;
+            if ($device->status === DeviceStatus::Connected) {
+                $this->qrStatus = 'connected';
+                $this->qrCode = null;
 
-            return;
-        }
+                return;
+            }
 
-        if ($device->qr_code && ! $device->isQrExpired()) {
-            $this->qrCode = $device->qr_code;
+            if ($device->qr_code && ! $device->isQrExpired()) {
+                $this->qrCode = $device->qr_code;
+                $this->qrStatus = 'waiting';
+                $this->qrCountdown = 60;
+
+                return;
+            }
+
+            $result = app(WhatsAppService::class)->getQrCode($device);
+            $qr = $result['qr'] ?? null;
+
+            if (empty($qr)) {
+                return;
+            }
+
+            $device->update([
+                'qr_code' => $qr,
+                'qr_expires_at' => now()->addSeconds(60),
+            ]);
+
+            $this->qrCode = $qr;
             $this->qrStatus = 'waiting';
             $this->qrCountdown = 60;
-
-            return;
+        } catch (Throwable $e) {
+            Log::warning('[DeviceManager] QR poll failed', [
+                'device' => $this->qrDeviceId,
+                'error' => $e->getMessage(),
+            ]);
         }
-
-        $result = $wa->getQrCode($device);
-        $qr = $result['qr'] ?? null;
-
-        if (empty($qr)) {
-            return;
-        }
-
-        $device->update([
-            'qr_code' => $qr,
-            'qr_expires_at' => now()->addSeconds(60),
-        ]);
-
-        $this->qrCode = $qr;
-        $this->qrStatus = 'waiting';
-        $this->qrCountdown = 60;
     }
 
     public function handleQrGenerated(array $data): void

@@ -135,6 +135,29 @@ test('pollQrFromDevice fetches qr from the wa service when the device has none',
         ->assertSet('qrStatus', 'waiting');
 });
 
+test('pollQrFromDevice does not throw when the wa service fails', function () {
+    $user = devicePageUser();
+    $device = Device::factory()->create([
+        'user_id' => $user->id,
+        'status' => 'connecting',
+        'qr_code' => null,
+        'qr_expires_at' => null,
+    ]);
+
+    $this->mock(WhatsAppService::class, function ($mock) {
+        $mock->shouldReceive('getQrCode')->once()->andThrow(new RuntimeException('wa down'));
+    });
+
+    Livewire::actingAs($user)
+        ->test(DeviceManager::class)
+        ->set('showQrModal', true)
+        ->set('qrDeviceId', $device->uuid)
+        ->set('qrStatus', 'loading')
+        ->call('pollQrFromDevice')
+        ->assertSet('qrStatus', 'loading')
+        ->assertSet('qrCode', null);
+});
+
 test('pollQrFromDevice marks the modal connected when the device is ready', function () {
     $user = devicePageUser();
     $device = Device::factory()->create([

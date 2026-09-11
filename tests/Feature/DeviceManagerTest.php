@@ -71,3 +71,83 @@ test('createDevice stores a device and opens the qr modal', function () {
 
     expect(Device::where('user_id', $user->id)->where('name', 'Support line')->exists())->toBeTrue();
 });
+
+test('createDevice opens the qr modal in loading state when startSession has no qr', function () {
+    $user = devicePageUser();
+
+    $this->mock(WhatsAppService::class, function ($mock) {
+        $mock->shouldReceive('startSession')->once()->andReturn(['success' => true]);
+    });
+
+    Livewire::actingAs($user)
+        ->test(DeviceManager::class)
+        ->set('newDeviceName', 'Sales line')
+        ->call('createDevice')
+        ->assertSet('showQrModal', true)
+        ->assertSet('qrStatus', 'loading')
+        ->assertSet('qrCode', null);
+});
+
+test('pollQrFromDevice shows qr stored on the device without echo', function () {
+    $user = devicePageUser();
+    $device = Device::factory()->create([
+        'user_id' => $user->id,
+        'name' => 'Sales line',
+        'status' => 'connecting',
+        'qr_code' => 'data:image/png;base64,polled',
+        'qr_expires_at' => now()->addSeconds(45),
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(DeviceManager::class)
+        ->set('showQrModal', true)
+        ->set('qrDeviceId', $device->uuid)
+        ->set('qrDeviceName', $device->name)
+        ->set('qrStatus', 'loading')
+        ->call('pollQrFromDevice')
+        ->assertSet('qrCode', 'data:image/png;base64,polled')
+        ->assertSet('qrStatus', 'waiting');
+});
+
+test('pollQrFromDevice fetches qr from the wa service when the device has none', function () {
+    $user = devicePageUser();
+    $device = Device::factory()->create([
+        'user_id' => $user->id,
+        'status' => 'connecting',
+        'qr_code' => null,
+        'qr_expires_at' => null,
+    ]);
+
+    $this->mock(WhatsAppService::class, function ($mock) {
+        $mock->shouldReceive('getQrCode')->once()->andReturn([
+            'success' => true,
+            'qr' => 'data:image/png;base64,from-node',
+        ]);
+    });
+
+    Livewire::actingAs($user)
+        ->test(DeviceManager::class)
+        ->set('showQrModal', true)
+        ->set('qrDeviceId', $device->uuid)
+        ->set('qrStatus', 'loading')
+        ->call('pollQrFromDevice')
+        ->assertSet('qrCode', 'data:image/png;base64,from-node')
+        ->assertSet('qrStatus', 'waiting');
+});
+
+test('pollQrFromDevice marks the modal connected when the device is ready', function () {
+    $user = devicePageUser();
+    $device = Device::factory()->create([
+        'user_id' => $user->id,
+        'status' => 'connected',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(DeviceManager::class)
+        ->set('showQrModal', true)
+        ->set('qrDeviceId', $device->uuid)
+        ->set('qrStatus', 'waiting')
+        ->set('qrCode', 'data:image/png;base64,old')
+        ->call('pollQrFromDevice')
+        ->assertSet('qrStatus', 'connected');
+});

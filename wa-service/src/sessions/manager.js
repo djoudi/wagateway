@@ -7,6 +7,7 @@ const { logger } = require('../utils/logger');
 const { notifyLaravel } = require('../utils/notify');
 
 const sessions    = new Map();
+const qrCodes     = new Map();
 const restartLock = new Set(); // Prevent double-restart
 
 async function createSession(sessionId, retryCount = 0) {
@@ -40,6 +41,7 @@ async function createSession(sessionId, retryCount = 0) {
     client.on('qr', async (qr) => {
         try {
             const qrDataUrl = await qrcode.toDataURL(qr);
+            qrCodes.set(sessionId, qrDataUrl);
             logger.info(`QR generated for ${sessionId}`);
             await notifyLaravel('qr', { session_id: sessionId, qr: qrDataUrl });
         } catch (err) {
@@ -50,6 +52,7 @@ async function createSession(sessionId, retryCount = 0) {
     // ── Ready ────────────────────────────────────────────────────────────────
     client.on('ready', async () => {
         const info = client.info;
+        qrCodes.delete(sessionId);
         logger.info(`Session ready: ${sessionId} (${info?.wid?.user})`);
         sessions.set(sessionId, client);
         await notifyLaravel('ready', {
@@ -63,6 +66,7 @@ async function createSession(sessionId, retryCount = 0) {
     client.on('disconnected', async (reason) => {
         logger.warn(`Session disconnected: ${sessionId} — ${reason}`);
         sessions.delete(sessionId);
+        qrCodes.delete(sessionId);
 
         await notifyLaravel('disconnected', { session_id: sessionId, reason });
 
@@ -82,6 +86,7 @@ async function createSession(sessionId, retryCount = 0) {
     client.on('auth_failure', async (msg) => {
         logger.error(`Auth failure for ${sessionId}: ${msg}`);
         sessions.delete(sessionId);
+        qrCodes.delete(sessionId);
         await notifyLaravel('disconnected', { session_id: sessionId, reason: 'AUTH_FAILURE' });
     });
 
@@ -129,6 +134,7 @@ async function createSession(sessionId, retryCount = 0) {
     } catch (err) {
         logger.error(`Session init failed for ${sessionId}: ${err.message}`);
         sessions.delete(sessionId);
+        qrCodes.delete(sessionId);
         throw err;
     }
 
@@ -148,9 +154,14 @@ async function terminateSession(sessionId) {
             logger.warn(`Destroy error for ${sessionId}: ${err.message}`);
         } finally {
             sessions.delete(sessionId);
+            qrCodes.delete(sessionId);
             logger.info(`Session terminated: ${sessionId}`);
         }
     }
+}
+
+function getQr(sessionId) {
+    return qrCodes.get(sessionId) || null;
 }
 
 async function getSessionStatus(sessionId) {
@@ -168,4 +179,4 @@ async function restoreAll() {
 // Health: return active session count
 function activeCount() { return sessions.size; }
 
-module.exports = { createSession, getSession, terminateSession, getSessionStatus, restoreAll, activeCount, sessions };
+module.exports = { createSession, getSession, terminateSession, getSessionStatus, getQr, restoreAll, activeCount, sessions, qrCodes };

@@ -131,8 +131,8 @@
         </div>
     </div>
 
-    @if ($showQrModal)
-    <div class="fixed inset-0 bg-ink/50 flex items-center justify-center z-50 p-4">
+            @if ($showQrModal)
+    <div class="fixed inset-0 bg-ink/50 flex items-center justify-center z-50 p-4" @if ($qrStatus !== 'connected') wire:poll.2s="pollQrFromDevice" @endif>
         <div class="bg-card rounded-[14px] w-72 max-w-full p-6 shadow-xl text-center border border-line">
             <div class="w-10 h-10 rounded-xl bg-signal-dim flex items-center justify-center mx-auto mb-3">
                 <i class="ti ti-qrcode text-signal-deep text-xl"></i>

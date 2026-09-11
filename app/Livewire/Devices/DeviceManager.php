@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Devices;
 
+use App\Enums\DeviceStatus;
 use App\Models\Device;
 use App\Services\WhatsAppService;
 use Livewire\Component;
@@ -124,6 +125,52 @@ class DeviceManager extends Component
         $device = Device::where('uuid', $deviceUuid)->where('user_id', auth()->id())->firstOrFail();
         $wa->terminateSession($device);
         $device->delete();
+    }
+
+    public function pollQrFromDevice(WhatsAppService $wa): void
+    {
+        if (! $this->showQrModal || ! $this->qrDeviceId || $this->qrStatus === 'connected') {
+            return;
+        }
+
+        $device = Device::where('uuid', $this->qrDeviceId)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (! $device) {
+            return;
+        }
+
+        if ($device->status === DeviceStatus::Connected) {
+            $this->qrStatus = 'connected';
+            $this->qrCode = null;
+
+            return;
+        }
+
+        if ($device->qr_code && ! $device->isQrExpired()) {
+            $this->qrCode = $device->qr_code;
+            $this->qrStatus = 'waiting';
+            $this->qrCountdown = 60;
+
+            return;
+        }
+
+        $result = $wa->getQrCode($device);
+        $qr = $result['qr'] ?? null;
+
+        if (empty($qr)) {
+            return;
+        }
+
+        $device->update([
+            'qr_code' => $qr,
+            'qr_expires_at' => now()->addSeconds(60),
+        ]);
+
+        $this->qrCode = $qr;
+        $this->qrStatus = 'waiting';
+        $this->qrCountdown = 60;
     }
 
     public function handleQrGenerated(array $data): void

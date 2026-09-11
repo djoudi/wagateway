@@ -1,5 +1,12 @@
 <div>
-@php $isAr = app()->getLocale() === 'ar'; @endphp
+@php
+    $isAr = app()->getLocale() === 'ar';
+    $nameToken = '{' . '{name}' . '}';
+    $companyToken = '{' . '{company}' . '}';
+    $bodyPlaceholder = $isAr
+        ? "اكتب رسالتك…\nاستخدم {$nameToken} أو {$companyToken} للتخصيص."
+        : "Type your message…\nUse {$nameToken} or {$companyToken} for personalisation.";
+@endphp
 
 @if ($activeJobUuid && in_array($activeJobStatus, ['pending','running']))
 <div class="mb-5 bg-card border-2 border-signal/50 rounded-[14px] p-4"
@@ -103,7 +110,7 @@
                     <span class="text-[10px] text-muted">{{ mb_strlen($messageBody) }} / 4096</span>
                 </div>
                 <textarea wire:model="messageBody" rows="4"
-                          placeholder="{{ $isAr ? "اكتب رسالتك…\nاستخدم @{{name}} أو @{{company}} للتخصيص." : "Type your message…\nUse @{{name}} or @{{company}} for personalisation." }}"
+                          placeholder="{{ $bodyPlaceholder }}"
                           class="w-full border border-line rounded-xl px-3.5 py-2.5 text-base outline-none
                                  focus:border-signal focus:ring-2 focus:ring-signal/20 resize-y transition-all"></textarea>
                 @error('messageBody')

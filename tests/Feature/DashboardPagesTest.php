@@ -53,6 +53,14 @@ test('closed sidebar is not a click overlay', function () {
         ->toContain("sidebarOpen ? 'is-open' : ''");
 });
 
+test('bulk send page renders without blade parse errors', function () {
+    $this->actingAs(dashboardUser())
+        ->withHeaders(['Accept-Language' => 'ar-DZ,ar;q=0.9'])
+        ->get('/bulk')
+        ->assertOk()
+        ->assertSee('إنشاء بث');
+});
+
 test('dashboard shell does not use old brand tokens or dead chrome', function () {
     $html = $this->actingAs(dashboardUser())
         ->get('/dashboard')

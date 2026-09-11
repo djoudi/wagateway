@@ -2,7 +2,7 @@
 return [
     'admin_emails'                  => array_values(array_filter(array_map(
         static fn (string $email) => strtolower(trim($email)),
-        explode(',', (string) env('ADMIN_EMAILS', 'admin@wagateway.dz')),
+        explode(',', (string) (filled(env('ADMIN_EMAILS')) ? env('ADMIN_EMAILS') : 'admin@wagateway.dz')),
     ))),
     'bulk_delay_min'                => env('BULK_DELAY_MIN', 1),
     'bulk_delay_max'                => env('BULK_DELAY_MAX', 3),

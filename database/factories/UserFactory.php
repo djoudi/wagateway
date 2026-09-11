@@ -21,7 +21,13 @@ class UserFactory extends Factory
             'password'          => static::$password ??= Hash::make('password'),
             'remember_token'    => Str::random(10),
             'is_suspended'      => false,
+            'is_admin'          => false,
         ];
+    }
+
+    public function admin(): static
+    {
+        return $this->state(fn () => ['is_admin' => true]);
     }
 
     public function unverified(): static

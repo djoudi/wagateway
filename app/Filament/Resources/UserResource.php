@@ -40,6 +40,8 @@ class UserResource extends Resource
                     ->searchable(),
                 Forms\Components\DateTimePicker::make('plan_expires_at')
                     ->label('Plan expires at')->nullable(),
+                Forms\Components\Toggle::make('is_admin')
+                    ->label('Admin'),
                 Forms\Components\Toggle::make('is_suspended')
                     ->label('Suspended'),
                 Forms\Components\TextInput::make('suspension_reason')
@@ -63,6 +65,7 @@ class UserResource extends Resource
                     }),
                 Tables\Columns\TextColumn::make('devices_count')->counts('devices')->label('Devices'),
                 Tables\Columns\TextColumn::make('messages_count')->counts('messages')->label('Messages'),
+                Tables\Columns\IconColumn::make('is_admin')->boolean()->label('Admin'),
                 Tables\Columns\IconColumn::make('is_suspended')->boolean()->label('Suspended'),
                 Tables\Columns\TextColumn::make('plan_expires_at')->dateTime()->label('Expires')->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->date()->sortable(),

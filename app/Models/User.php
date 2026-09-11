@@ -24,7 +24,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         'api_key','api_key_hash','api_key_prefix',
         'api_key_test','api_key_test_hash','api_key_test_prefix',
         'api_key_last_used_at','api_key_last_used_ip',
-        'plan_expires_at','is_suspended','suspension_reason',
+        'plan_expires_at','is_suspended','is_admin','suspension_reason',
     ];
 
     protected $hidden = [
@@ -38,6 +38,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         'plan_expires_at'       => 'datetime',
         'api_key_last_used_at'  => 'datetime',
         'is_suspended'          => 'boolean',
+        'is_admin'              => 'boolean',
         'password'              => 'hashed',
     ];
 
@@ -122,6 +123,10 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 
     public function isAdmin(): bool
     {
+        if ($this->is_admin) {
+            return true;
+        }
+
         $email = strtolower(trim((string) $this->email));
         $admins = array_map(
             static fn ($value) => strtolower(trim((string) $value)),

@@ -4,13 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class MakeAdminUser extends Command
 {
     protected $signature = 'user:make-admin
-                            {email : Email that must also be listed in ADMIN_EMAILS}
+                            {email : Admin email}
                             {--name=Admin : Display name}
                             {--password= : Password (random if omitted)}';
 
@@ -25,7 +24,12 @@ class MakeAdminUser extends Command
 
         $user = User::query()->firstOrNew(['email' => $email]);
         $user->name = $name !== '' ? $name : ($user->name ?: 'Admin');
-        $user->password = Hash::make($password);
+        if ($this->option('password') || ! $user->exists) {
+            $user->password = $password;
+        } else {
+            $generated = false;
+        }
+        $user->is_admin = true;
         $user->email_verified_at ??= now();
         $user->save();
 
@@ -33,18 +37,11 @@ class MakeAdminUser extends Command
             $user->generateApiKeys();
         }
 
-        $listed = $user->isAdmin();
-
-        $this->info("User ready: {$user->email}");
+        $this->info("Admin ready: {$user->email}");
         if ($generated) {
             $this->warn("Password: {$password}");
         }
         $this->warn('Open Filament at /admin (not /login).');
-
-        if (! $listed) {
-            $this->error("{$user->email} is not in ADMIN_EMAILS. Add it, then run: php artisan config:cache");
-            return self::FAILURE;
-        }
 
         return self::SUCCESS;
     }

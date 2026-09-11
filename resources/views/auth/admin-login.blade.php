@@ -7,7 +7,7 @@
         <div class="status status-error">{{ $errors->first() }}</div>
     @endif
 
-    <form method="POST" action="/admin/login" data-loading>
+    <form method="POST" action="/admin/sign-in" data-loading>
         @csrf
 
         <div class="field">

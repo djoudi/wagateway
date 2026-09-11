@@ -16,14 +16,14 @@ class DatabaseSeeder extends Seeder
             $plan = Plan::where('slug', 'pro')->first();
             $adminEmail = config('wagateway.admin_emails')[0] ?? 'admin@wagateway.dz';
 
-            $admin = User::query()->firstOrCreate(
-                ['email' => $adminEmail],
-                [
-                    'name'     => 'Admin',
-                    'password' => bcrypt('Admin@123456'),
-                    'plan_id'  => $plan?->id,
-                ],
-            );
+            $admin = User::query()->firstOrNew(['email' => $adminEmail]);
+            $admin->name = $admin->name ?: 'Admin';
+            $admin->plan_id = $admin->plan_id ?: $plan?->id;
+            $admin->is_admin = true;
+            if (! $admin->exists) {
+                $admin->password = 'Admin@123456';
+            }
+            $admin->save();
 
             if (! $admin->api_key_hash) {
                 $keys = $admin->generateApiKeys();
@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
                 $this->command->warn(' Password: Admin@123456');
                 $this->command->warn(" Live: {$keys['live']}");
                 $this->command->warn(" Test: {$keys['test']}");
-                $this->command->warn(' Set ADMIN_EMAILS to this address to open /admin.');
+                $this->command->warn(' Sign in at /admin');
                 $this->command->warn('─────────────────────────────────────────');
             }
         }

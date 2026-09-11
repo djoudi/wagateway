@@ -128,6 +128,7 @@ RUN npm ci && npm run build
 # ─────────────────────────────────────────────────────────────────────────
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV WA_SERVICE_PORT=3000
 RUN cd wa-service && npm install --omit=dev
 RUN mkdir -p wa-service/sessions wa-service/src/logs
 

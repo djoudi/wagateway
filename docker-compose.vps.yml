@@ -52,6 +52,7 @@ services:
     restart: unless-stopped
     environment:
       - PORT=3000
+      - WA_SERVICE_PORT=3000
       - LARAVEL_WEBHOOK_URL=http://app/internal/wa-events
       - LARAVEL_SECRET=${WA_SERVICE_SECRET}
       - SESSION_STORE=local

@@ -10,7 +10,20 @@ const sessionRoutes = require('./routes/session');
 const healthRoutes  = require('./routes/health');
 
 const app  = express();
-const PORT = process.env.PORT || 3000;
+function resolveListenPort() {
+  const dedicated = Number.parseInt(process.env.WA_SERVICE_PORT || '', 10);
+  if (Number.isInteger(dedicated) && dedicated > 0 && dedicated < 65536) {
+    return dedicated;
+  }
+  const inherited = Number.parseInt(process.env.PORT || '3000', 10);
+  // EasyPanel/Coolify inject PORT=80 for the public web process. Never steal
+  // it, and never collide with nginx (80/443) or Reverb (8080) in this image.
+  if (!Number.isInteger(inherited) || inherited <= 0 || inherited === 80 || inherited === 443 || inherited === 8080) {
+    return 3000;
+  }
+  return inherited;
+}
+const PORT = resolveListenPort();
 
 // ─── Security middleware ──────────────────────────────────────────────────────
 app.use(helmet());
@@ -42,9 +55,13 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   logger.info(`WA Service listening on port ${PORT}`);
-  sessions.restoreAll(); // Restore persisted sessions on startup
+  sessions.restoreAll();
+});
+server.on('error', (err) => {
+  logger.error(`WA Service failed to bind port ${PORT}: ${err.message}`);
+  process.exit(1);
 });
 
 module.exports = app;

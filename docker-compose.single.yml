@@ -61,6 +61,7 @@ services:
 
       # WhatsApp service (same container)
       WA_SERVICE_URL: http://127.0.0.1:3000
+      WA_SERVICE_PORT: "3000"
       WA_SERVICE_SECRET: ${WA_SERVICE_SECRET}
 
       # Admin

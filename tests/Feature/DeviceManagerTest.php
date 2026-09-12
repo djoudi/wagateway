@@ -158,6 +158,32 @@ test('pollQrFromDevice does not throw when the wa service fails', function () {
         ->assertSet('qrCode', null);
 });
 
+test('pollQrFromDevice shows an error when the wa service is unreachable', function () {
+    $user = devicePageUser();
+    $device = Device::factory()->create([
+        'user_id' => $user->id,
+        'status' => 'connecting',
+        'qr_code' => null,
+        'qr_expires_at' => null,
+    ]);
+
+    $this->mock(WhatsAppService::class, function ($mock) {
+        $mock->shouldReceive('getQrCode')->once()->andReturn([
+            'success' => false,
+            'error' => 'WA service unreachable',
+        ]);
+    });
+
+    Livewire::actingAs($user)
+        ->test(DeviceManager::class)
+        ->set('showQrModal', true)
+        ->set('qrDeviceId', $device->uuid)
+        ->set('qrStatus', 'loading')
+        ->call('pollQrFromDevice')
+        ->assertSet('qrStatus', 'error')
+        ->assertSet('qrError', 'WA service unreachable');
+});
+
 test('pollQrFromDevice marks the modal connected when the device is ready', function () {
     $user = devicePageUser();
     $device = Device::factory()->create([

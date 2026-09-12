@@ -8,7 +8,14 @@ const { notifyLaravel } = require('../utils/notify');
 
 const sessions    = new Map();
 const qrCodes     = new Map();
+const lastErrors  = new Map();
 const restartLock = new Set(); // Prevent double-restart
+
+function resolveChromiumPath() {
+    return process.env.PUPPETEER_EXECUTABLE_PATH
+        || '/usr/bin/chromium'
+        || undefined;
+}
 
 async function createSession(sessionId, retryCount = 0) {
     if (sessions.has(sessionId)) {
@@ -16,22 +23,24 @@ async function createSession(sessionId, retryCount = 0) {
         return sessions.get(sessionId);
     }
 
+    lastErrors.delete(sessionId);
+
     const client = new Client({
         authStrategy: new LocalAuth({
             clientId: sessionId,
-            dataPath:  process.env.SESSION_PATH || path.resolve('/app/sessions'),
+            dataPath:  process.env.SESSION_PATH || path.resolve('/var/www/html/wa-service/sessions'),
         }),
         puppeteer: {
             headless: true,
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+            executablePath: resolveChromiumPath(),
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-accelerated-2d-canvas',
                 '--disable-gpu',
-                '--single-process',
-                '--no-zygote',
+                '--no-first-run',
+                '--no-default-browser-check',
             ],
         },
         restartOnAuthFail: true,
@@ -42,6 +51,7 @@ async function createSession(sessionId, retryCount = 0) {
         try {
             const qrDataUrl = await qrcode.toDataURL(qr);
             qrCodes.set(sessionId, qrDataUrl);
+            lastErrors.delete(sessionId);
             logger.info(`QR generated for ${sessionId}`);
             await notifyLaravel('qr', { session_id: sessionId, qr: qrDataUrl });
         } catch (err) {
@@ -135,6 +145,7 @@ async function createSession(sessionId, retryCount = 0) {
         logger.error(`Session init failed for ${sessionId}: ${err.message}`);
         sessions.delete(sessionId);
         qrCodes.delete(sessionId);
+        lastErrors.set(sessionId, err.message);
         throw err;
     }
 
@@ -164,6 +175,10 @@ function getQr(sessionId) {
     return qrCodes.get(sessionId) || null;
 }
 
+function getLastError(sessionId) {
+    return lastErrors.get(sessionId) || null;
+}
+
 async function getSessionStatus(sessionId) {
     const client = sessions.get(sessionId);
     if (!client)   return 'disconnected';
@@ -179,4 +194,4 @@ async function restoreAll() {
 // Health: return active session count
 function activeCount() { return sessions.size; }
 
-module.exports = { createSession, getSession, terminateSession, getSessionStatus, getQr, restoreAll, activeCount, sessions, qrCodes };
+module.exports = { createSession, getSession, terminateSession, getSessionStatus, getQr, getLastError, restoreAll, activeCount, sessions, qrCodes };

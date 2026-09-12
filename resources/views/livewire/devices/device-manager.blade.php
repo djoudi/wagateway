@@ -152,6 +152,20 @@
                     {{ $isAr ? 'تم' : 'Done' }}
                 </button>
 
+            @elseif ($qrStatus === 'error')
+                <div class="w-40 mx-auto mb-3 bg-danger-dim rounded-xl flex flex-col items-center justify-center p-4">
+                    <i class="ti ti-alert-circle text-3xl text-danger mb-2"></i>
+                    <p class="text-xs text-danger">{{ $qrError ?: ($isAr ? 'تعذر إنشاء رمز QR' : 'Could not generate QR') }}</p>
+                </div>
+                <button type="button" wire:click="reconnectDevice('{{ $qrDeviceId }}')"
+                        class="w-full py-2 bg-signal text-[#06170F] text-sm font-medium rounded-lg min-h-11 mb-2">
+                    {{ $isAr ? 'إعادة المحاولة' : 'Retry' }}
+                </button>
+                <button wire:click="closeQrModal"
+                        class="w-full py-2 border border-line text-muted text-sm rounded-lg hover:bg-paper transition-colors min-h-11">
+                    {{ $isAr ? 'إلغاء' : 'Cancel' }}
+                </button>
+
             @elseif ($qrCode)
                 <div class="w-40 h-40 mx-auto mb-3 bg-card border border-line rounded-xl flex items-center justify-center overflow-hidden">
                     <img src="{{ $qrCode }}" alt="QR Code" class="w-full h-full object-contain p-1" />

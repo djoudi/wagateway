@@ -19,6 +19,7 @@ class DeviceManager extends Component
     public ?string $qrDeviceName = null;
     public string $qrStatus = 'waiting';
     public int $qrCountdown = 60;
+    public ?string $qrError = null;
 
     public function getListeners(): array
     {
@@ -95,6 +96,7 @@ class DeviceManager extends Component
         $this->qrCode = $qr;
         $this->qrStatus = $qr ? 'waiting' : 'loading';
         $this->qrCountdown = 60;
+        $this->qrError = null;
         $this->showQrModal = true;
     }
 
@@ -113,6 +115,7 @@ class DeviceManager extends Component
         $this->qrCode = null;
         $this->qrDeviceId = null;
         $this->qrStatus = 'waiting';
+        $this->qrError = null;
     }
 
     public function disconnectDevice(string $deviceUuid, WhatsAppService $wa): void
@@ -163,6 +166,11 @@ class DeviceManager extends Component
             $qr = $result['qr'] ?? null;
 
             if (empty($qr)) {
+                if (! empty($result['error'])) {
+                    $this->qrStatus = 'error';
+                    $this->qrError = (string) $result['error'];
+                }
+
                 return;
             }
 

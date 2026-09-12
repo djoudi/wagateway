@@ -19,7 +19,9 @@ router.get('/status/:id', async (req, res) => {
 });
 router.get('/qr/:id', (req, res) => {
   const qr = manager.getQr(req.params.id);
-  res.json({ success: Boolean(qr), qr: qr || null });
+  if (qr) return res.json({ success: true, qr });
+  const error = manager.getLastError(req.params.id);
+  res.json({ success: false, qr: null, error: error || null });
 });
 router.delete('/:id', async (req, res) => { await manager.terminateSession(req.params.id); res.json({ success: true }); });
 module.exports = router;

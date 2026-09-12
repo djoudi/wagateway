@@ -12,6 +12,15 @@ export LARAVEL_SECRET="${LARAVEL_SECRET:-${WA_SERVICE_SECRET:-}}"
 export LARAVEL_WEBHOOK_URL="${LARAVEL_WEBHOOK_URL:-http://127.0.0.1/internal/wa-events}"
 export SESSION_PATH="${SESSION_PATH:-/var/www/html/wa-service/sessions}"
 export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="${PUPPETEER_SKIP_CHROMIUM_DOWNLOAD:-true}"
+if [ -z "${PUPPETEER_EXECUTABLE_PATH:-}" ]; then
+    for candidate in /usr/bin/chromium /usr/bin/chromium-browser /usr/lib/chromium/chromium; do
+        if [ -x "$candidate" ]; then
+            export PUPPETEER_EXECUTABLE_PATH="$candidate"
+            break
+        fi
+    done
+fi
+export PUPPETEER_EXECUTABLE_PATH="${PUPPETEER_EXECUTABLE_PATH:-/usr/bin/chromium}"
 cd /var/www/html/wa-service || exit 1
 if [ ! -d node_modules ]; then
     echo "wa-service: node_modules missing" >&2
